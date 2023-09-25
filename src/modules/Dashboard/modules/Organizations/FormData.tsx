@@ -445,10 +445,12 @@ const FormData = ({ ...props }: CollegeFormProps) => {
                     Affiliation: Yup.string().required("Required")
 
                 })}
-                onSubmit={values => {
+                onSubmit={(values) => {
+                    console.log(values);
                     setIsLoading(true);
                     handleSubmit(values.Name, values.Code);
                 }}
+                
             >
                 <Form className={orgStyles.popupDropdownContainer}>
                     <div className={orgStyles.inputFieldContainer}>
@@ -562,13 +564,12 @@ const FormData = ({ ...props }: CollegeFormProps) => {
                         <button
                             type="submit"
                             className="btn blue-btn"
-                            disabled={isDisabled}
                         >
                             Submit
                             {isLoading ? (
                                 <ClipLoader
                                     size={20}
-                                    color="#fff"
+                                    color="#fffeee"
                                     className={orgStyles.btnLoader}
                                 />
                             ) : null}

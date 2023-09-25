@@ -67,14 +67,8 @@ export const getAffiliation = async (setAffiliationData: any) => {
     try {
         await privateGateway
             .get(organizationRoutes.getAffiliation)
-            .then(response => {
-                return response.data;
-            })
-            .then(data => {
-                const affiliation: CountryProps[] =
-                    data.response.data.affiliation;
-                setAffiliationData(affiliation);
-            });
+            .then(response => response.data.response.data)
+            .then(data => setAffiliationData(data));
     } catch (err: unknown) {
         const error = err as AxiosError;
     }
