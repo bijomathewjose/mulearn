@@ -1,22 +1,24 @@
-import { useEffect, useRef, useState } from "react";
+import { ReactElement, useEffect, useRef, useState } from "react";
 import Pagination from "@/MuLearnComponents/Pagination/Pagination";
-import Table from "@/MuLearnComponents/Table/Table";
+import { Blank } from "@/MuLearnComponents/Table/Blank";
+import Table, { Data } from "@/MuLearnComponents/Table/Table";
 import THead from "@/MuLearnComponents/Table/THead";
 import TableTop from "@/MuLearnComponents/TableTop/TableTop";
 import { PowerfulButton } from "@/MuLearnComponents/MuButtons/MuButton";
 import { AiOutlinePlusCircle, AiOutlineUser } from "react-icons/ai";
 import styles from "./CollegeLevels.module.css";
 import modalStyles from "./components/Modal.module.css";
-import { useToast } from "@chakra-ui/react";
 import Modal from "./components/Modal";
 import CollegeLevelsEdit from "./components/CollegeLevelsEdit";
 import CollegeLevelsCreate from "./components/CollegeLevelsCreate";
 import { deleteCollegeLevels, getCollegeLevels } from "./apis";
+import { ReactJSXElement } from "@emotion/react/types/jsx-namespace";
+import toast from "react-hot-toast";
 
 function CollegeLevels() {
     const [data, setData] = useState<any[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
     const [perPage, setPerPage] = useState(20);
     const [sort, setSort] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -24,8 +26,6 @@ function CollegeLevels() {
     //Modal
     const [currModal, setCurrModal] = useState<null | "create" | "edit">(null);
     const [currOrdId, setCurrOrgId] = useState<string | null>(null);
-
-    const toast = useToast();
     const icons = {
         user: (
             <div className={modalStyles.tickIcon}>
@@ -46,7 +46,7 @@ function CollegeLevels() {
                         stroke="#039855"
                         stroke-width="2"
                         stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinejoin="round"
                     />
                 </svg>
             </div>
@@ -69,35 +69,98 @@ function CollegeLevels() {
         )
     };
 
-    const columnOrder = [
+    const columnOrder: {
+        column: string;
+        Label: string;
+        isSortable: boolean;
+        wrap?: (
+            data: string | ReactElement,
+            id: string,
+            row: Data
+        ) => ReactJSXElement;
+    }[] = [
         // { column: "id", Label: "ID", isSortable: true },
-        { column: "org", Label: "College", isSortable: false },
-        { column: "level", Label: "Level", isSortable: false },
-        { column: "discord_link", Label: "Discord", isSortable: false },
-        { column: "updated_by", Label: "Updated By", isSortable: false },
-        { column: "updated_at", Label: "Updated At", isSortable: false },
-        { column: "created_by", Label: "Created By", isSortable: false },
-        { column: "created_at", Label: "Created At", isSortable: false }
-    ];
+        { column: "org", Label: "College", isSortable: true },
+        { column: "level", Label: "Level", isSortable: true },
+        { column: "member_count", Label: "No of members", isSortable: true },
+        {
+            column: "no_of_members_increased",
+            Label: "Member Gain",
+            isSortable: true
+        },
+        { column: "lc_count", Label: "Number of LCs", isSortable: true },
+        {
+            column: "no_of_lc_increased",
+            Label: "LC Gain",
+            isSortable: true
+        },
 
+        {
+            column: "total_karma_gained",
+            Label: "Total Karma",
+            isSortable: true
+        },
+        {
+            column: "total_karma_increased",
+            Label: "Karma Gain",
+            isSortable: true,
+            wrap: (data, id, row) =>
+                data === "-" ? (
+                    <>{data}</>
+                ) : (
+                    <>
+                        {data}({Math.round(row.increased_percentage as number)}
+                        %)
+                    </>
+                )
+        }
+        // {
+        //     column: "increased_percentage",
+        //     Label: "Karma Gain%",
+        //     isSortable: true
+        // }
+        // { column: "updated_by", Label: "Updated By", isSortable: false },
+        // { column: "updated_at", Label: "Updated At", isSortable: false },
+        // { column: "created_by", Label: "Created By", isSortable: false },
+        // { column: "created_at", Label: "Created At", isSortable: false }
+    ];
     const errHandler = (err: any) => {
-        toast({
-            title: "Something went wrong",
-            description: err,
-            status: "error",
-            duration: 3000,
-            isClosable: true
-        });
+        toast.error("Something Went Wrong");
+        toast.error(err.message);
     };
 
     const handleNextClick = () => {
         const nextPage = currentPage + 1;
         setCurrentPage(nextPage);
+        getCollegeLevels(
+            {
+                setData: setData,
+                page: nextPage,
+                selectedValue: perPage,
+                setIsLoading: setIsLoading,
+                setTotalPages: setTotalPages,
+                search: "",
+                sortID: sort
+            },
+            errHandler
+        );
     };
 
     const handlePreviousClick = () => {
         const prevPage = currentPage - 1;
         setCurrentPage(prevPage);
+        getCollegeLevels(
+            {
+                setData: setData,
+                page: prevPage,
+                selectedValue: perPage,
+                setIsLoading: setIsLoading,
+                setTotalPages: setTotalPages,
+                search: "",
+                sortID: sort
+            },
+            errHandler
+        );
     };
 
     useEffect(() => {
@@ -131,7 +194,7 @@ function CollegeLevels() {
                         setIsLoading: setIsLoading,
                         setTotalPages: setTotalPages,
                         search: "",
-                        sortID: ""
+                        sortID: sort
                     },
                     errHandler
                 ),
@@ -141,6 +204,18 @@ function CollegeLevels() {
 
     const handleSearch = (search: string) => {
         setCurrentPage(1);
+        getCollegeLevels(
+            {
+                setData: setData,
+                page: 1,
+                selectedValue: perPage,
+                setIsLoading: setIsLoading,
+                setTotalPages: setTotalPages,
+                search: search,
+                sortID: sort
+            },
+            errHandler
+        );
     };
 
     const handleEdit = (id: string | number | boolean) => {
@@ -156,6 +231,18 @@ function CollegeLevels() {
     const handlePerPageNumber = (selectedValue: number) => {
         setCurrentPage(1);
         setPerPage(selectedValue);
+        getCollegeLevels(
+            {
+                setData: setData,
+                page: 1,
+                selectedValue: selectedValue,
+                setIsLoading: setIsLoading,
+                setTotalPages: setTotalPages,
+                search: "",
+                sortID: ""
+            },
+            errHandler
+        );
     };
 
     const handleCreate = () => {
@@ -165,10 +252,13 @@ function CollegeLevels() {
     const handleIconClick = (column: string) => {
         if (sort === column) {
             setSort(`-${column}`);
+            delayedRefetch();
         } else {
             setSort(column);
+            delayedRefetch();
         }
     };
+    console.log(data);
     return (
         <>
             {currModal
@@ -206,12 +296,12 @@ function CollegeLevels() {
                   })()
                 : ""}
 
-            <div className={styles.createBtnContainer}>
+            {/* <div className={styles.createBtnContainer}>
                 <PowerfulButton onClick={handleCreate}>
                     <AiOutlinePlusCircle />
                     Create
                 </PowerfulButton>
-            </div>
+            </div> */}
 
             {data && (
                 <>
@@ -227,16 +317,16 @@ function CollegeLevels() {
                         perPage={perPage}
                         columnOrder={columnOrder}
                         id={["id"]}
-                        onEditClick={handleEdit}
-                        onDeleteClick={handleDelete}
-                        modalDeleteHeading="Delete"
-                        modalTypeContent="error"
-                        modalDeleteContent="Are you sure you want to delete this college level ?"
+                        // onEditClick={handleEdit}
+                        // onDeleteClick={handleDelete}
+                        // modalDeleteHeading="Delete"
+                        // modalTypeContent="error"
+                        // modalDeleteContent="Are you sure you want to delete this college level ?"
                     >
                         <THead
                             columnOrder={columnOrder}
                             onIconClick={handleIconClick}
-                            action={true}
+                            action={false}
                         />
                         <div>
                             {!isLoading && (
@@ -246,6 +336,7 @@ function CollegeLevels() {
                                     margin="10px 0"
                                     handleNextClick={handleNextClick}
                                     handlePreviousClick={handlePreviousClick}
+                                    onSearchText={handleSearch}
                                     onPerPageNumber={handlePerPageNumber}
                                     perPage={perPage}
                                     setPerPage={setPerPage}

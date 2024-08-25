@@ -3,7 +3,8 @@ import styles from "./BulkImport.module.css";
 import { FiUploadCloud } from "react-icons/fi";
 import { bulkImport } from "./BulkImportApi";
 import { SingleButton } from "../MuButtons/MuButton";
-import { useToast } from "@chakra-ui/react";
+import MuLoader from "../MuLoader/MuLoader";
+import toast from "react-hot-toast";
 
 interface Props extends React.HTMLAttributes<HTMLInputElement> {
     path: string;
@@ -16,7 +17,7 @@ const BulkImport = ({ path, fileName, onUpload, onError, ...rest }: Props) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-    const toast = useToast();
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
@@ -86,22 +87,18 @@ const BulkImport = ({ path, fileName, onUpload, onError, ...rest }: Props) => {
 
     const handleUpload = () => {
         if (selectedFile) {
+            setIsLoading(true);
             const renamedFile = renameFile(selectedFile, "file.xlsx");
             const formData = new FormData();
             formData.append(fileName, renamedFile);
             bulkImport(formData, path).then(response => {
+                setIsLoading(false);
                 if (response.status && response.status !== 200) {
                     if (onError) {
                         onError(response);
                     }
                     if (response.status === 400 || response.status === 403) {
-                        toast({
-                            title: "Error",
-                            description: response.data?.message?.general[0],
-                            status: "error",
-                            duration: 5000,
-                            isClosable: true
-                        });
+                        toast.error(response.data?.message?.general[0]);
                         return;
                     }
                 }
@@ -158,6 +155,14 @@ const BulkImport = ({ path, fileName, onUpload, onError, ...rest }: Props) => {
                     <div className={styles.fileInfo}>
                         <span>{selectedFile.name}</span>
                         <SingleButton text={"Upload"} onClick={handleUpload} />
+                    </div>
+                )}
+            </div>
+
+            <div>
+                {isLoading && (
+                    <div>
+                        <MuLoader />
                     </div>
                 )}
             </div>

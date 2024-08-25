@@ -5,14 +5,17 @@ import TopNavBar from "../components/TopNavBar";
 import { Suspense, useEffect, useState } from "react";
 // import companyButtons from "../utils/userwiseButtonsData/companyButtons";
 // import userButtons from "../utils/userwiseButtonsData/userButtons";
-import { roles } from "@/MuLearnServices/types";
+import { roles, managementTypes } from "@/MuLearnServices/types";
 import MuLoader from "@/MuLearnComponents/MuLoader/MuLoader";
 import { fetchLocalStorage } from "@/MuLearnServices/common_functions";
+// import DynamicType from "../modules/DynamicType/DynamicType";
 
 //TODO: Remove flaticons and use react-icons or vice-versa
 const DashboardRootLayout = (props: { component?: any }) => {
     const [connected, setConnected] = useState(false);
 
+    const Management: ManagementTypes[] =
+        Object.values(managementTypes).slice(2);
     useEffect(() => {
         const userInfo = fetchLocalStorage<UserInfo>("userInfo");
         if (userInfo) {
@@ -34,12 +37,12 @@ const DashboardRootLayout = (props: { component?: any }) => {
             hasView: !connected,
             icon: <i className="fi fi-sr-data-transfer"></i>
         },
-
         {
             url: "/dashboard/campus-details",
             title: "Campus Details",
             hasView: true,
-            roles: [roles.CAMPUS_LEAD, roles.ENABLER],
+            roles: [roles.CAMPUS_LEAD, roles.LEAD_ENABLER],
+            dynamicType: [managementTypes.CAMPUS],
             icon: <i className="fi fi-sr-book-arrow-right"></i>
         },
         {
@@ -47,6 +50,7 @@ const DashboardRootLayout = (props: { component?: any }) => {
             title: "Hackathon",
             hasView: true,
             roles: [roles.ADMIN],
+            dynamicType: [managementTypes.HACKATHON],
             icon: <i className="fi fi-sr-head-side-thinking"></i>
         },
         {
@@ -56,10 +60,21 @@ const DashboardRootLayout = (props: { component?: any }) => {
             icon: <i className="fi fi-sr-books"></i>
         },
         {
+            url: "/dashboard/wadhwani",
+            title: "Wadhwani",
+            hasView: true,
+            icon: <i className="fi fi-sr-building"></i>
+        },
+        {
+            url: "/dashboard/opengrad",
+            title: "OpenGrad",
+            hasView: true,
+            icon: <i className="fi fi-sr-building"></i>
+        },
+        {
             url: "/dashboard/refer",
             title: "Referrals",
             hasView: true,
-            roles: [roles.STUDENT],
             icon: <i className="fi fi-sr-building"></i>
         },
         {
@@ -68,56 +83,15 @@ const DashboardRootLayout = (props: { component?: any }) => {
             hasView: true,
             roles: [roles.ADMIN, roles.FELLOW, roles.ASSOCIATE],
             icon: <i className="fi fi-sr-layout-fluid"></i>,
+            dynamicType: Management,
             children: [
-                {
-                    url: "/dashboard/interest-groups",
-                    title: "Interest Groups",
-                    hasView: true,
-                    roles: [roles.ADMIN]
-                    // icon: <i className="fi fi-sr-books"></i>
-                },
-                {
-                    url: "/dashboard/organizations",
-                    title: "Organizations",
-                    hasView: true,
-                    roles: [roles.ADMIN]
-                    // icon: <i className="fi fi-sr-building"></i>
-                },
-
-                {
-                    url: "/dashboard/college-levels",
-                    title: "College Levels",
-                    hasView: true,
-                    roles: [roles.ADMIN, roles.FELLOW]
-                    // icon: <i className="fi fi-sr-building"></i>
-                },
-                {
-                    url: "/dashboard/tasks",
-                    title: "Tasks",
-                    hasView: true,
-                    roles: [roles.ADMIN]
-                    // icon: <i className="fi fi-sr-note"></i>
-                },
-                {
-                    url: "/dashboard/karma-voucher",
-                    title: "Karma Voucher",
-                    hasView: true,
-                    roles: [roles.ADMIN, roles.FELLOW]
-                    // icon: <i className="fi fi-sr-note"></i>
-                },
-                {
-                    url: "/dashboard/error-log",
-                    title: "Error Log",
-                    hasView: true,
-                    roles: [roles.ADMIN]
-                    // icon: <i className="fi fi-sr-note"></i>
-                },
                 {
                     url: "",
                     title: "User Management",
                     hasView: true,
-                    roles: [roles.ADMIN],
+                    roles: [roles.ADMIN, roles.FELLOW],
                     // icon: <i className="fi fi-sr-users"></i>,
+                    dynamicType: [managementTypes.USER_MANAGEMENT],
                     children: [
                         {
                             url: "/dashboard/manage-users",
@@ -134,10 +108,117 @@ const DashboardRootLayout = (props: { component?: any }) => {
                     ]
                 },
                 {
+                    url: "",
+                    title: "Manage Organization",
+                    hasView: true,
+
+                    roles: [roles.ADMIN, roles.FELLOW],
+                    children: [
+                        {
+                            url: "/dashboard/affiliation",
+                            title: "Affiliation",
+                            hasView: true,
+                            roles: [roles.ADMIN, roles.FELLOW]
+                        },
+                        {
+                            url: "/dashboard/organization-transfer",
+                            title: "Organization Transfer",
+                            hasView: true,
+                            roles: [roles.ADMIN]
+                        },
+                        {
+                            url: "/dashboard/manage-departments",
+                            title: "Departments",
+                            hasView: true,
+                            roles: [roles.ADMIN]
+                            // icon: <i className="fi fi-sr-users-gear"></i>
+                        },
+                        {
+                            url: "/dashboard/organizations",
+                            title: "Organizations",
+                            hasView: true,
+                            roles: [roles.ADMIN]
+                            // icon: <i className="fi fi-sr-building"></i>
+                        }
+                    ]
+                },
+                {
+                    url: "",
+                    title: "Task Management",
+                    hasView: true,
+                    roles: [roles.ADMIN],
+                    // icon: <i className="fi fi-sr-users"></i>,
+                    children: [
+                        {
+                            url: "/dashboard/tasks",
+                            title: "Tasks",
+                            hasView: true,
+                            roles: [roles.ADMIN]
+                        },
+                        {
+                            url: "/dashboard/task-type",
+                            title: "Task Type",
+                            hasView: true,
+                            roles: [roles.ADMIN]
+                        },
+                        {
+                            url: "/dashboard/events",
+                            title: "Events",
+                            hasView: true,
+                            roles: [roles.ADMIN]
+                        }
+                    ]
+                },
+                {
+                    url: "/dashboard/interest-groups",
+                    title: "Interest Groups",
+                    hasView: true,
+                    roles: [roles.ADMIN]
+                    // icon: <i className="fi fi-sr-books"></i>
+                },
+                {
+                    url: "/dashboard/college-levels",
+                    title: "College Levels",
+                    hasView: true,
+                    roles: [roles.ADMIN, roles.FELLOW]
+                    // icon: <i className="fi fi-sr-building"></i>
+                },
+                // {
+                //     url: "/dashboard/tasks",
+                //     title: "Tasks",
+                //     hasView: true,
+                //     roles: [roles.ADMIN]
+                //     // icon: <i className="fi fi-sr-note"></i>
+                // },
+                // {
+                //     url: "/dashboard/task-type",
+                //     title: "Task Type",
+                //     hasView: true,
+                //     roles: [roles.ADMIN]
+                //     // icon: <i className="fi fi-sr-note"></i>
+                // },
+
+                {
+                    url: "/dashboard/karma-voucher",
+                    title: "Karma Voucher",
+                    hasView: true,
+                    roles: [roles.ADMIN, roles.FELLOW]
+                    // icon: <i className="fi fi-sr-note"></i>
+                },
+                {
+                    url: "/dashboard/error-log",
+                    title: "Error Log",
+                    hasView: true,
+                    roles: [roles.ADMIN, roles.TECH_TEAM]
+                    // icon: <i className="fi fi-sr-note"></i>
+                },
+
+                {
                     url: "/dashboard/dynamic-type",
                     title: "Dynamic Type",
                     hasView: true,
-                    roles: [roles.ADMIN]
+                    roles: [roles.ADMIN],
+                    dynamicType: [managementTypes.DYNAMIC_TYPE]
                     // icon: <i className="fi fi-sr-users-gear"></i>
                 },
                 {
@@ -147,13 +228,7 @@ const DashboardRootLayout = (props: { component?: any }) => {
                     roles: [roles.ADMIN]
                     // icon: <i className="fi fi-sr-users-gear"></i>
                 },
-                {
-                    url: "/dashboard/manage-departments",
-                    title: "Manage Departments",
-                    hasView: true,
-                    roles: [roles.ADMIN]
-                    // icon: <i className="fi fi-sr-users-gear"></i>
-                },
+
                 {
                     url: "/dashboard/manage-locations",
                     title: "Manage Locations",
@@ -162,11 +237,27 @@ const DashboardRootLayout = (props: { component?: any }) => {
                     icon: <i className="fi fi-ss-map-marker"></i>
                 },
                 {
+                    url: "/dashboard/channels",
+                    title: "Channels",
+                    hasView: true,
+                    roles: [roles.ADMIN, roles.FELLOW]
+                },
+
+                {
                     url: "/dashboard/url-shortener",
                     title: "URL Shortener",
                     hasView: true,
-                    roles: [roles.ADMIN, roles.FELLOW, roles.ASSOCIATE]
+                    roles: [roles.ADMIN, roles.FELLOW, roles.ASSOCIATE],
+                    dynamicType: [managementTypes.URL_SHORTENER]
                     // icon: <i className="fi fi-sr-globe"></i>
+                },
+
+                {
+                    url: "/dashboard/discord-moderation",
+                    title: "Discord Moderation",
+                    hasView: true,
+                    roles: [roles.ADMIN]
+                    // icon: <i className="fi fi-sr-users-gear"></i>
                 }
             ]
         },

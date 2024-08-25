@@ -1,27 +1,26 @@
 import { useEffect, useState } from "react";
 import styles from "./BasicDetails.module.css";
 import HeatmapComponent from "../../Heatmap/HeatmapComponent";
-import { useToast } from "@chakra-ui/react";
 import { editIgDetails, getAllIg } from "../services/api";
 import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 type Props = {
     userProfile: any;
     userLog: any;
 };
 const BasicDetails = (props: Props) => {
-    const toast = useToast();
     const [editIg, setEditIg] = useState(false);
     const [allIg, setAllIg] = useState<any>([]);
 
     const [ig, setIg] = useState<any>(props.userProfile.interest_groups);
     const { id } = useParams<{ id: string }>();
     useEffect(() => {
-        // getIgDetails(toast, setIg);
         getAllIg(setAllIg);
     }, []);
     const ig_sorted = ig.sort((a: any, b: any) => {
         return a.name > b.name ? 1 : -1;
     });
+
     return (
         <>
             <div className={styles.interestGrp}>
@@ -29,7 +28,8 @@ const BasicDetails = (props: Props) => {
                     <b>Interest Groups</b>
                     <div className={styles.close_and_submit_btn_div}>
                         {!id &&
-                            props.userProfile.level.slice(3, 4) >= 4 &&
+                            (props.userProfile.level.slice(3, 4) >= 4 ||
+                                props.userProfile.roles.includes("Mentor")) &&
                             !editIg && (
                                 <p
                                     onClick={() => setEditIg(true)}
@@ -56,7 +56,6 @@ const BasicDetails = (props: Props) => {
                                 onClick={() => {
                                     setEditIg(false);
                                     editIgDetails(
-                                        toast,
                                         ig_sorted.map((ig: any) => {
                                             return ig.id;
                                         })
@@ -71,15 +70,15 @@ const BasicDetails = (props: Props) => {
                     </div>
                 </div>
                 <div className={styles.igs_container}>
-                    {props.userProfile.interest_groups.length != 0 ? (
+                    {props.userProfile.interest_groups.length !== 0 ? (
                         ig.map((data: any, i: number) => {
                             return (
                                 <div
                                     style={
                                         editIg
                                             ? {
-                                                transform: "scale(0.955)"
-                                            }
+                                                  transform: "scale(0.955)"
+                                              }
                                             : {}
                                     }
                                     className={styles.igs}
@@ -92,19 +91,14 @@ const BasicDetails = (props: Props) => {
                                                     setIg(
                                                         ig.filter(
                                                             (ig: any) =>
-                                                                ig.name !=
+                                                                ig.name !==
                                                                 data.name
                                                         )
                                                     );
                                                 } else {
-                                                    toast({
-                                                        title: "Error",
-                                                        description:
-                                                            "You must have atleast one interest group",
-                                                        status: "error",
-                                                        duration: 3000,
-                                                        isClosable: true
-                                                    });
+                                                    toast.error(
+                                                        "You must have at least one interest group"
+                                                    );
                                                 }
                                             }}
                                             className="fi fi-sr-circle-xmark"
@@ -115,18 +109,21 @@ const BasicDetails = (props: Props) => {
                                         {data.karma !== null
                                             ? data.karma > 1000
                                                 ? (
-                                                    data.karma / 1000
-                                                ).toPrecision(2) + "K"
+                                                      data.karma / 1000
+                                                  ).toPrecision(2) + "K"
                                                 : data.karma
-                                                    ? data.karma
-                                                    : "0"
+                                                  ? data.karma
+                                                  : "0"
                                             : "0"}
                                     </p>
                                 </div>
                             );
                         })
                     ) : (
-                        <p>No Interest Groups to show</p>
+                        <p>
+                            No Interest Groups to Selected, You need you reach
+                            Level 4 to Select
+                        </p>
                     )}
                     {editIg && <hr />}
                 </div>
@@ -135,7 +132,7 @@ const BasicDetails = (props: Props) => {
                         {allIg
                             .filter((data: any) => {
                                 return !ig.some(
-                                    (ig: any) => ig.name == data.name
+                                    (ig: any) => ig.name === data.name
                                 );
                             })
                             .map((data: any, i: number) => {
@@ -149,9 +146,9 @@ const BasicDetails = (props: Props) => {
                                                             (
                                                                 prevState: any
                                                             ) => [
-                                                                    ...prevState,
-                                                                    data
-                                                                ]
+                                                                ...prevState,
+                                                                data
+                                                            ]
                                                         );
                                                 }
                                                 // editIgDetails(

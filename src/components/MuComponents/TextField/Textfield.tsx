@@ -1,4 +1,3 @@
-import { background } from "@chakra-ui/react";
 import styles from "./Textfield.module.css";
 import React from "react";
 
@@ -22,7 +21,7 @@ const Textfield = (props: {
             style={props.style}
             onClick={props.onClick}
         >
-			<span>{props.content}</span>
+            <span>{props.content}</span>
             <input
                 type={props.inputType}
                 value={props.input}

@@ -4,12 +4,13 @@ import {
     MuButtonLight
 } from "@/MuLearnComponents/MuButtons/MuButton";
 import { fetchLocalStorage } from "@/MuLearnServices/common_functions";
-import { useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import styles from "./SideNavBar.module.css";
 import MuLogOut from "../assets/svg/MuLogOut";
+import MuSettings from "../assets/svg/MuSettings";
+import toast from "react-hot-toast";
 
 type SideNavBarBodyProps = {
     sidebarButtons: {
@@ -17,6 +18,7 @@ type SideNavBarBodyProps = {
         title: string;
         hasView: boolean;
         roles?: Role[];
+        dynamicType?: ManagementTypes[];
         icon?: any;
         children?: SideNavBarBodyProps["sidebarButtons"];
     }[];
@@ -27,7 +29,6 @@ const SideNavBarBody = ({
     sidebarButtons,
     toggleSideNavBar
 }: SideNavBarBodyProps) => {
-    const toast = useToast();
     const navigate = useNavigate();
 
     const [dropDownBtnDisplay, setDropDownBtnDisplay] = useState("0");
@@ -53,10 +54,16 @@ const SideNavBarBody = ({
                     .filter(
                         button =>
                             button.hasView &&
-                            (!button.roles ||
+                            ((!button.roles ||
                                 button.roles?.some(role =>
                                     userInfo?.roles?.includes(role)
                                 ))
+                                ||
+                                (
+                                    button.dynamicType?.some(type =>
+                                        userInfo?.dynamic_type?.includes(type as ManagementTypes)
+                                    ))
+                            )
                     )
                     .map((button, i) =>
                         button.children ? (
@@ -80,7 +87,12 @@ const SideNavBarBody = ({
                                                     userInfo?.roles?.includes(
                                                         role
                                                     )
-                                                ))
+                                                )
+                                                ||
+                                                (
+                                                    button.dynamicType?.some(type =>
+                                                        userInfo?.dynamic_type?.includes(type as ManagementTypes)
+                                                    )))
                                     )
                                     .map((button, i) =>
                                         button.children ? (
@@ -98,7 +110,7 @@ const SideNavBarBody = ({
                                                 }
                                                 display={
                                                     level2dropDownDisplay ===
-                                                    button.title
+                                                        button.title
                                                         ? "max-content"
                                                         : "0"
                                                 }
@@ -112,7 +124,12 @@ const SideNavBarBody = ({
                                                                         userInfo?.roles?.includes(
                                                                             role
                                                                         )
-                                                                ))
+                                                                )
+                                                                ||
+                                                                (
+                                                                    button.dynamicType?.some(type =>
+                                                                        userInfo?.dynamic_type?.includes(type as ManagementTypes)
+                                                                    )))
                                                     )
                                                     .map((button, i) => (
                                                         <MuButton
@@ -128,10 +145,10 @@ const SideNavBarBody = ({
                                                                 navigate(
                                                                     button.url
                                                                 );
-                                                                window.innerWidth <=
-                                                                830
-                                                                    ? toggleSideNavBar()
-                                                                    : null;
+                                                                // window.innerWidth <=
+                                                                //     830
+                                                                //     ? toggleSideNavBar()
+                                                                //     : null;
                                                             }}
                                                         />
                                                     ))}
@@ -171,16 +188,16 @@ const SideNavBarBody = ({
                     )}
             </div>
             <div className={styles.bottomButtons}>
-                {/* <MuButton
-          text="Settings"
-          icon={<MuSettings />}
-          onClick={() => navigate("/dashboard/settings")}
-          style={{
-              color: "#9297AA",
-              backgroundColor: "#fff",
-              // marginBottom: "0px"
-          }}
-      /> */}
+                <MuButton
+                    text="Account Setting"
+                    icon={<MuSettings />}
+                    onClick={() => navigate("/dashboard/settings/account")}
+                    style={{
+                        color: "#9297AA",
+                        backgroundColor: "#fff"
+                        // marginBottom: "0px"
+                    }}
+                />
                 <MuButtonLight
                     text="Logout"
                     icon={<MuLogOut />}
@@ -190,13 +207,7 @@ const SideNavBarBody = ({
                     }}
                     onClick={() => {
                         localStorage.clear();
-                        toast({
-                            title: "Logged out",
-                            description: "Redirecting to login page.",
-                            status: "error",
-                            duration: 9000,
-                            isClosable: true
-                        });
+                        toast.error("Logged Out, Redirecting to login page.");
                         setTimeout(() => window.location.reload(), 900);
                     }}
                 />

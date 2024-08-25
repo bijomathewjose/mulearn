@@ -2,12 +2,10 @@ import BulkImport from "@/MuLearnComponents/BulkImport/BulkImport";
 import { convertToXLSX } from "./TaskApis";
 import { SingleButton } from "@/MuLearnComponents/MuButtons/MuButton";
 import { dashboardRoutes } from "@/MuLearnServices/urls";
-import { useState, useMemo, MouseEventHandler } from "react";
+import { useState, useMemo } from "react";
 import { BiDownload, BiArrowBack } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
-
-type Props = {};
-
+import { getTaskTemplate } from "./TaskApis";
 export const CountCard = ({
     title,
     count
@@ -23,7 +21,7 @@ export const CountCard = ({
     );
 };
 
-const TaskBulkImport = (props: Props) => {
+const TaskBulkImport = () => {
     const [uploadResponse, setUploadResponse] = useState<any>(null);
     const navigate = useNavigate();
     const handleClick = () => {
@@ -69,9 +67,9 @@ const TaskBulkImport = (props: Props) => {
                 />
                 <SingleButton
                     text={"Download Template"}
-                    onClick={handleClick}
+                    onClick={() => getTaskTemplate()}
                     icon={<BiDownload />}
-                    link="https://docs.google.com/spreadsheets/d/1Lj-rRc_uo6MY_Lz6wJhpWZA8ya39EZw-omy-yN4-OBA/edit?usp=drivesdk"
+                    // link="https://docs.google.com/spreadsheets/d/1Lj-rRc_uo6MY_Lz6wJhpWZA8ya39EZw-omy-yN4-OBA/edit?usp=drivesdk"
                 />
             </div>
 

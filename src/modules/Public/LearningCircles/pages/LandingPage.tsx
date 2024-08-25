@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./LandingPage.module.css";
 import imageBottom from "../Assets/LC3.webp";
+import LCCard from "../components/LCCard";
 import { Link, useNavigate } from "react-router-dom";
 import {
     fetchCampusOptions,
@@ -13,6 +14,10 @@ import {
 } from "../services/LandingPageApi";
 import Select from "react-select";
 import MuLoader from "@/MuLearnComponents/MuLoader/MuLoader";
+import { MuButton } from "@/MuLearnComponents/MuButtons/MuButton";
+import { joinCircle } from "../../../Dashboard/modules/LearningCircle/services/LearningCircleAPIs";
+import toast from "react-hot-toast";
+import Modal from "@/MuLearnComponents/Modal/Modal";
 
 interface Option {
     value: string;
@@ -42,6 +47,8 @@ const LandingPage = () => {
     const [selectedIg, setSelectedIg] = useState<Option | null>(null);
     const [msg, setMsg] = useState<string>("Select a district");
     const [loading, setLoading] = useState<boolean>(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [lcId, setLcId] = useState<string>("");
 
     useEffect(() => {
         fetchCountryOptions(setCountryOptions);
@@ -96,7 +103,7 @@ const LandingPage = () => {
             setIgOptions(await getInterestGroups());
             setSelectedIg(null);
 
-            fetchLC(setLoading, setData,district, selectedCampus.value);
+            fetchLC(setLoading, setData, district, selectedCampus.value);
 
             setData([]);
             setMsg("");
@@ -107,7 +114,7 @@ const LandingPage = () => {
         if (selectedIg) {
             setIg(selectedIg.value);
             setSelectedIg(selectedIg);
-            fetchLC(setLoading, setData,district, campus, selectedIg.value);
+            fetchLC(setLoading, setData, district, campus, selectedIg.value);
         }
     };
 
@@ -122,7 +129,7 @@ const LandingPage = () => {
             color: "#000",
             width: "100%",
             padding: ".3rem .4rem",
-            minWidth: "200px",
+            minWidth: "200px"
         }),
         placeholder: (provided: any) => ({
             ...provided,
@@ -156,11 +163,10 @@ const LandingPage = () => {
 
     useEffect(() => {
         const finalValues: number[] = [
-            count?.state ?? 0,
-            count?.district ?? 0,
             count?.interest_group ?? 0,
             count?.college ?? 0,
-            count?.learning_circle ?? 0
+            count?.learning_circle ?? 0,
+            count?.total_no_of_users ?? 0
         ];
 
         const startCounterAnimation = () => {
@@ -213,7 +219,13 @@ const LandingPage = () => {
         };
     }, [count]);
 
-
+    const handleJoinClick = (id: string) => {
+        const acessToken = localStorage.getItem("accessToken");
+        if (!acessToken) {
+            toast.error("Please login to join a circle");
+            navigate("/login");
+        } else joinCircle(id);
+    };
 
     return (
         <div className={styles.LClandingPage}>
@@ -223,7 +235,9 @@ const LandingPage = () => {
                     <div>
                         <Link to="https://mulearn.org/">About</Link>
                         <Link to="https://mulearn.org/events/">Programs</Link>
-                        <Link to="https://learn.mulearn.org/">Interest Group</Link>
+                        <Link to="https://learn.mulearn.org/">
+                            Interest Group
+                        </Link>
                         <Link to="https://mulearn.org/careers">Careers</Link>
                     </div>
                     <button
@@ -271,14 +285,14 @@ const LandingPage = () => {
                                 </b>
                                 <p>
                                     {index === 0
-                                        ? "State"
+                                        ? "Interest Groups"
                                         : index === 1
-                                            ? "Districts"
+                                            ? "Colleges"
                                             : index === 2
-                                                ? "Interest Groups"
+                                                ? "Learning Circles"
                                                 : index === 3
-                                                    ? "Campuses"
-                                                    : "Learning Circles"}
+                                                    ? "Number of Users"
+                                                    : ""}
                                 </p>
                             </div>
                         ))}
@@ -343,25 +357,34 @@ const LandingPage = () => {
                         />
                     </div>
                 </form>
-
-                {loading ?
+                {isOpen && (
+                    <Modal
+                        setIsOpen={setIsOpen}
+                        id={"Join Circle"}
+                        heading={"Join Learning Circle"}
+                        content={
+                            "Are you sure you want to join this learning circle?"
+                        }
+                        click={() => {
+                            handleJoinClick(lcId);
+                        }}
+                        type="Join"
+                    />
+                )}
+                {loading ? (
                     <div className={styles.loader}>
                         <MuLoader />
                     </div>
-                    : <div className={styles.container}>
+                ) : (
+                    <div className={styles.container}>
                         {data.length > 0 ? (
                             data.map((lc: LcRandom) => (
-                                <div className={styles.exploreCards}>
-                                    <img
-                                        src="https://i.ibb.co/zJkPfqB/Iot-Vector.png"
-                                        alt="png"
-                                    />
-                                    <h1>{lc.name}</h1>
-                                    <span>
-                                        <b>{lc.ig_name}</b> &nbsp;{" "}
-                                        <b>Members count: {lc.member_count}</b>
-                                    </span>
-                                </div>
+                                <LCCard
+                                    lc={lc}
+                                    setIsOpen={setIsOpen}
+                                    msg={msg}
+                                    setLcId={setLcId}
+                                />
                             ))
                         ) : (
                             <div className={styles.LClandingPagenone}>
@@ -373,8 +396,9 @@ const LandingPage = () => {
                                 <b>{msg}</b>
                             </div>
                         )}
+
                     </div>
-                }
+                )}
             </div>
         </div>
     );

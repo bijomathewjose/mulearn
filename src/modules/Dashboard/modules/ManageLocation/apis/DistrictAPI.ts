@@ -1,7 +1,6 @@
 import { AxiosError, AxiosRequestConfig } from "axios";
 import { privateGateway } from "@/MuLearnServices/apiGateways";
 import { ManageLocationsRoutes } from "@/MuLearnServices/urls";
-import { ToastId, UseToastOptions } from "@chakra-ui/toast";
 
 //*WORKING✅
 export const getDistrictData = async (
@@ -50,7 +49,7 @@ export const postDistrictData = async (zone: string, stateName: string) => {
                 ),
                 {
                     zone: zone,
-                    name: stateName
+                    label: stateName
                 }
             )
             .then(({ data }) => data.response)
@@ -71,17 +70,11 @@ export const patchDistrictData = async (
 ) => {
     try {
         await privateGateway
-            .patch(
-                ManageLocationsRoutes.patchDistrictData.replace(
-                    "${district}",
-                    district
-                ),
-                {
-                    zone: zone,
-                    id: district,
-                    name: newName
-                }
-            )
+            .patch(ManageLocationsRoutes.patchDistrictData + `${district}/`, {
+                // zone: zone,
+                id: district,
+                label: newName
+            })
             .then(({ data }) => data.response)
             .then(({ data }) => {});
     } catch (err: unknown) {
@@ -96,12 +89,7 @@ export const patchDistrictData = async (
 export const deleteDistrictData = async (districtID: string) => {
     try {
         await privateGateway
-            .delete(
-                ManageLocationsRoutes.patchDistrictData.replace(
-                    "${district}",
-                    districtID
-                )
-            )
+            .delete(ManageLocationsRoutes.patchDistrictData + `${districtID}`)
             .then(({ data }) => data.response)
             .then(({ data }) => {
                 window.location.reload(); // TODO: Temporary fix, better solution needed (delete takes time, API fetch after delete doesnt give the omitted data)

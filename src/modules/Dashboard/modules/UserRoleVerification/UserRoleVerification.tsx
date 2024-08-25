@@ -4,8 +4,13 @@ import Table from "@/MuLearnComponents/Table/Table";
 import TableTop from "@/MuLearnComponents/TableTop/TableTop";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { editUserRoleVerification, getUserRoleVerification } from "./apis";
+import {
+    deleteUserRole,
+    editUserRoleVerification,
+    getUserRoleVerification
+} from "./apis";
 import MuLoader from "@/MuLearnComponents/MuLoader/MuLoader";
+import { dashboardRoutes } from "@/MuLearnServices/urls";
 
 function UsersRoleVerification() {
     const [data, setData] = useState<TData[]>([]);
@@ -19,19 +24,19 @@ function UsersRoleVerification() {
     const [loading, setLoading] = useState(false);
     type TData = {
         full_name: string;
-        mu_id: string;
+        muid: string;
+        id: string;
         discord_id: string;
         role_title: string;
         verified: boolean;
     };
     const columnOrder: ColOrder[] = [
         { column: "full_name", Label: "Full Name", isSortable: true },
-        { column: "mu_id", Label: "Mu ID", isSortable: true },
+        { column: "muid", Label: "Mu ID", isSortable: true },
+        { column: "mobile", Label: "Mobile Number", isSortable: true },
         { column: "discord_id", Label: "Discord ID", isSortable: false },
-        { column: "email", Label: "Email", isSortable: false },
-        // { column: "user_id", Label: "User ID", isSortable: false },
+        { column: "email", Label: "Email", isSortable: true },
         { column: "role_title", Label: "Role Title", isSortable: true },
-        // { column: "role_id", Label: "Role ID", isSortable: false },
         { column: "verified", Label: "Verified", isSortable: false }
     ];
 
@@ -74,22 +79,14 @@ function UsersRoleVerification() {
     };
 
     const handleEdit = (id: string | number | boolean) => {
-        //console.log(id);
         navigate(`/dashboard/user-role-verification/edit/${id}`);
     };
-    // const handleEdit = (id: string | number | boolean) => {
-    //     console.log(id);
-    //     navigate(`/dashboard/user-role-verification/edit/${id}`);
-    // };
 
-    const handleDelete = (id: string | number | boolean) => {
-        //console.log(id);
-        navigate(`/dashboard//user-role-verification/delete/${id}`);
+    const handleDelete = async (id: string | undefined) => {
+        await deleteUserRole(id);
+        const updatedData = data.filter(item => item.id !== id);
+        setData(updatedData);
     };
-    // const handleDelete = (id: string | number | boolean) => {
-    //     console.log(id);
-    //     navigate(`/dashboard/user-role-verification/delete/${id}`);
-    // };
 
     const handlePerPageNumber = (selectedValue: number) => {
         setCurrentPage(1);
@@ -106,7 +103,7 @@ function UsersRoleVerification() {
 
     const handleIconClick = (column: string) => {
         if (column === "full_name") column = "first_name";
-        if (column === "mu_id") column = "muid";
+        if (column === "muid") column = "muid";
         if (sort === column) {
             setSort(`-${column}`);
             getUserRoleVerification(
@@ -128,8 +125,6 @@ function UsersRoleVerification() {
                 column
             );
         }
-
-        //console.log(`Icon clicked for column: ${column}`);
     };
 
     async function handleVerify(id: string | number | boolean) {
@@ -147,6 +142,7 @@ function UsersRoleVerification() {
                     <TableTop
                         onSearchText={handleSearch}
                         onPerPageNumber={handlePerPageNumber}
+                        CSV={dashboardRoutes.getUserRoleVerificationCSV}
                     />
                     <Table
                         rows={data}
@@ -154,9 +150,13 @@ function UsersRoleVerification() {
                         perPage={perPage}
                         columnOrder={columnOrder}
                         id={["id"]}
+                        onDeleteClick={handleDelete}
                         onVerifyClick={handleVerify}
+                        modalDeleteHeading="Delete"
+                        modalTypeContent="error"
                         modalVerifyHeading="Verify"
                         modalVerifyContent="Are you sure you want to verify this user ?"
+                        modalDeleteContent="Are you sure you want to delete this user ?"
                     >
                         <THead
                             columnOrder={columnOrder}

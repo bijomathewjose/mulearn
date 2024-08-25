@@ -40,23 +40,17 @@ const KarmaHistory = (props: Props) => {
                 </span>
             </p>
             <div className={styles.karma_history_container} id="section1">
-                {userLog.map((log: any,i) => {
+                {userLog.map((log: any, i) => {
                     return (
                         <div className={styles.karma_history} key={i}>
-                            <p className={styles.karma_history_box_bg}>
-                                <KarmaSymbol />
-                            </p>
+                            <p className={styles.task_name}>#{log.task_name}</p>
+
                             <div className={styles.content}>
-                                <h1 className={styles.karma}>{log.karma} ϰ</h1>
-                                <h2>Karma</h2>
-                                <div className={styles.karma_div}>
-                                    <p style={{ fontSize: "12px" }}>
-                                        Awarded for
-                                    </p>
-                                    <p className={styles.task_name}>
-                                        #{log.task_name}
-                                    </p>
-                                </div>
+                                <h1 className={styles.karma}>+{log.karma} </h1>
+                                <h1>Karma</h1>
+                                <p className={styles.karma_history_box_bg}>
+                                    <KarmaSymbol />
+                                </p>
 
                                 <p className={styles.date}>
                                     {moment

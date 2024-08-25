@@ -1,17 +1,16 @@
-import {
-    PowerfulButton
-} from "@/MuLearnComponents/MuButtons/MuButton";
+import { PowerfulButton } from "@/MuLearnComponents/MuButtons/MuButton";
 import Pagination from "@/MuLearnComponents/Pagination/Pagination";
 import THead from "@/MuLearnComponents/Table/THead";
 import Table from "@/MuLearnComponents/Table/Table";
 import TableTop from "@/MuLearnComponents/TableTop/TableTop";
 import { dashboardRoutes } from "@/MuLearnServices/urls";
-import { useToast } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { AiOutlinePlusCircle } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import styles from "../InterestGroup/InterestGroup.module.css";
 import { getKarmaVoucher } from "./service/api";
+import { Blank } from "@/MuLearnComponents/Table/Blank";
+import toast from "react-hot-toast";
 
 type Props = {};
 
@@ -24,7 +23,6 @@ const KarmaVoucher = (props: Props) => {
     const [sort, setSort] = useState("");
     const firstFetch = useRef(true);
     const navigate = useNavigate();
-    const toast = useToast();
 
     const columnOrder: ColOrder[] = [
         { column: "user", Label: "User", isSortable: true },
@@ -41,13 +39,7 @@ const KarmaVoucher = (props: Props) => {
     ];
 
     const handleError = () => {
-        toast({
-            title: "Oops",
-            description: "Table fetch failed!",
-            status: "error",
-            duration: 5000,
-            isClosable: true
-        });
+        toast.error("Table Fetch failed. Please try again later.");
     };
 
     const handleNextClick = () => {
@@ -151,8 +143,6 @@ const KarmaVoucher = (props: Props) => {
                 column
             );
         }
-
-        //console.log(`Icon clicked for column: ${column}`);
     };
     return (
         <>
@@ -169,7 +159,7 @@ const KarmaVoucher = (props: Props) => {
                     }
                 >
                     <AiOutlinePlusCircle />
-                    Bulk Import
+                    Bulk Import Voucher
                 </PowerfulButton>
             </div>
 
@@ -209,7 +199,7 @@ const KarmaVoucher = (props: Props) => {
                                 />
                             )}
                         </div>
-                        {/*use <Blank/> when u don't need <THead /> or <Pagination inside <Table/> cause <Table /> needs atleast 2 children*/}
+                        <Blank />
                     </Table>
                 </>
             )}

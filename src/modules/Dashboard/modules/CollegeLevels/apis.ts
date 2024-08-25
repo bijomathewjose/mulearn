@@ -34,11 +34,24 @@ export const getCollegeLevels = async (
                 }
             }
         );
-        console.log(response.data.response);
-        setData(response.data.response);
+        const data = response.data.response.data;
+        if (setTotalPages) {
+            setTotalPages(response.data.response.pagination.totalPages);
+        }
+        setData(
+            data.map((data: any) => ({
+                id: data.id,
+                no_of_alumni: data.no_of_alumni,
+                level: data.level,
+                org: data.org,
+                ...data.no_of_lc,
+                ...data.number_of_members,
+                ...data.total_karma
+            }))
+        );
     } catch (err) {
-        if (errHandler) errHandler(err);
         console.log(err);
+        if (errHandler) errHandler(err);
     } finally {
         setIsLoading(false);
     }
@@ -59,7 +72,10 @@ export const editCollegeLevels = async (
     errHandler?: Function
 ) => {
     try {
-        await privateGateway.patch(dashboardRoutes.collegeLevels + id, data);
+        await privateGateway.patch(
+            dashboardRoutes.collegeLevlesDelete + `${id}/`,
+            data
+        );
     } catch (err) {
         if (errHandler) errHandler(err);
         else console.log(err);

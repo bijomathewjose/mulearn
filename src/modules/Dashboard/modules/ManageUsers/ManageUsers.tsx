@@ -3,10 +3,13 @@ import THead from "@/MuLearnComponents/Table/THead";
 import Table from "@/MuLearnComponents/Table/Table";
 import TableTop from "@/MuLearnComponents/TableTop/TableTop";
 import { dashboardRoutes } from "@/MuLearnServices/urls";
-import { useToast } from "@chakra-ui/react";
+
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { deleteManageUsers, getManageUsers } from "./apis";
+import { Blank } from "@/MuLearnComponents/Table/Blank";
+import MuModal from "@/MuLearnComponents/MuModal/MuModal";
+import UserForm from "./UserForm";
 
 function ManageRoles() {
     const [data, setData] = useState<any[]>([]);
@@ -17,25 +20,22 @@ function ManageRoles() {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const firstFetch = useRef(true);
-    const toast = useToast();
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [id, setId] = useState("");
+    const UserFormRef = useRef<any>(null); //! Use for modal and form button connectivity
 
     type ColOrderType = { isSortable: boolean; column: string; Label: string };
 
     const columnOrder: ColOrderType[] = [
-        { column: "first_name", Label: "First Name", isSortable: true },
-        { column: "last_name", Label: "Last Name", isSortable: true },
+        // { column: "first_name", Label: "First Name", isSortable: true },
+        // { column: "last_name", Label: "Last Name", isSortable: true },
+        { column: "full_name", Label: "Full Name", isSortable: true },
         { column: "karma", Label: "Total Karma", isSortable: true },
         { column: "muid", Label: "Mu ID", isSortable: true },
-        { column: "email", Label: "Email", isSortable: false },
-        { column: "mobile", Label: "Mobile", isSortable: false },
-        // { column: "dob", Label: "DOB", isSortable: false },
-        // { column: "gender", Label: "Gender", isSortable: false },
-
-        // { column: "college", Label: "Institute", isSortable: false },
-
-        { column: "discord_id", Label: "Discord ID", isSortable: false },
-        // { column: "id", Label: "ID", isSortable: false },
-        // { column: "active", Label: "Active", isSortable: false },
+        { column: "email", Label: "Email", isSortable: true },
+        { column: "mobile", Label: "Mobile", isSortable: true },
+        { column: "discord_id", Label: "Discord ID", isSortable: true },
         { column: "level", Label: "Level", isSortable: true },
         { column: "created_at", Label: "Created On", isSortable: true }
     ];
@@ -63,7 +63,7 @@ function ManageRoles() {
             page: nextPage,
             selectedValue: perPage,
             setIsLoading: setIsLoading,
-            setTotalPages: () => { },
+            setTotalPages: () => {},
             search: "",
             sortID: sort
         });
@@ -77,7 +77,7 @@ function ManageRoles() {
             page: prevPage,
             selectedValue: perPage,
             setIsLoading: setIsLoading,
-            setTotalPages: () => { },
+            setTotalPages: () => {},
             search: "",
             sortID: sort
         });
@@ -96,11 +96,14 @@ function ManageRoles() {
         });
     };
 
-    const handleEdit = (id: string | number | boolean) =>
-        navigate(`/dashboard/manage-users/edit/${id}`);
+    const handleEdit = (id: string | number | boolean) => {
+        setId(id as string);
+        setIsModalOpen(true);
+        // navigate(`/dashboard/manage-users/edit/${id}`);
+    };
 
     const handleDelete = (id: string | undefined) => {
-        deleteManageUsers(id, toast);
+        deleteManageUsers(id);
         getManageUsers({
             setData: setData,
             page: 1,
@@ -126,10 +129,6 @@ function ManageRoles() {
             sortID: ""
         });
     };
-
-    // const handleCreate = () => {
-    //     navigate("/manage-users/create");
-    // };
 
     const handleIconClick = (column: string) => {
         if (sort === column) {
@@ -159,23 +158,30 @@ function ManageRoles() {
 
     return (
         <>
-            {/* <div className={styles.createBtnContainer}>
-                <MuButton
-                    className={styles.createBtn}
-                    text={"Create"}
-                    icon={<AiOutlinePlusCircle></AiOutlinePlusCircle>}
-                    onClick={handleCreate}
-                />
-            </div> */}
-
             {data && (
                 <>
                     <TableTop
                         onSearchText={handleSearch}
                         onPerPageNumber={handlePerPageNumber}
                         CSV={dashboardRoutes.getUsersList}
-                    // CSV={"http://localhost:8000/api/v1/dashboard/ig/csv"}
+                        // CSV={"http://localhost:8000/api/v1/dashboard/ig/csv"}
                     />
+                    <MuModal
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        title={`Edit User`}
+                        type={"success"}
+                        body={`Enter the details of the user.`}
+                        onDone={() =>
+                            UserFormRef.current?.handleSubmitExternally()
+                        }
+                    >
+                        <UserForm
+                            ref={UserFormRef}
+                            id={id}
+                            closeModal={() => setIsModalOpen(false)}
+                        />
+                    </MuModal>
                     <Table
                         rows={data}
                         isloading={isLoading}
@@ -209,7 +215,7 @@ function ManageRoles() {
                                 />
                             )}
                         </div>
-                        {/*use <Blank/> when u don't need <THead /> or <Pagination inside <Table/> cause <Table /> needs atleast 2 children*/}
+                        <Blank />
                     </Table>
                 </>
             )}

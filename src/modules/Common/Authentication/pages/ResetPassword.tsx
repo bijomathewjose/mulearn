@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./Login.module.css";
-import { useToast } from "@chakra-ui/react";
+
 import { getMuid, resetPassword } from "../services/apis";
 import { useFormik } from "formik";
 
@@ -9,20 +9,20 @@ type Props = {};
 
 const ResetPassword = (props: Props) => {
     const [showOrHidePassword, setShowOrHidePassword] = useState("password");
-    const [showOrHideConfirmPassword, setShowOrHideConfirmPassword] = useState("password");
+    const [showOrHideConfirmPassword, setShowOrHideConfirmPassword] =
+        useState("password");
     const [muid, setMuID] = useState("");
     const [searchParams] = useSearchParams();
     const [token, setToken] = useState("");
     localStorage.clear();
     const navigate = useNavigate();
-    const toast = useToast();
 
     useEffect(() => {
         const paramToken = searchParams.get("token");
         setToken(paramToken as string);
         console.log(token);
         if (token.length > 0 && muid.length === 0) {
-            getMuid(token, toast, navigate, setMuID);
+            getMuid(token, navigate, setMuID);
         }
     }, [token]);
 
@@ -35,7 +35,7 @@ const ResetPassword = (props: Props) => {
 
     const onSubmit = async (values: any) => {
         if (formik.errors.password || formik.errors.confirmPassword) return;
-        resetPassword(token, values.password, toast, navigate);
+        resetPassword(token, values.password, navigate);
     };
 
     const validate = (values: any) => {
@@ -91,7 +91,7 @@ const ResetPassword = (props: Props) => {
                                 value={formik.values.password}
                             />
                             {formik.touched.password &&
-                                formik.errors.password ? (
+                            formik.errors.password ? (
                                 <div className={styles.error_message}>
                                     {formik.errors.password}
                                 </div>
@@ -123,7 +123,7 @@ const ResetPassword = (props: Props) => {
                                 value={formik.values.confirmPassword}
                             />
                             {formik.touched.confirmPassword &&
-                                formik.errors.confirmPassword ? (
+                            formik.errors.confirmPassword ? (
                                 <div className={styles.error_message}>
                                     {formik.errors.confirmPassword}
                                 </div>
@@ -134,7 +134,9 @@ const ResetPassword = (props: Props) => {
                                     e.preventDefault();
                                     showOrHideConfirmPassword == "password"
                                         ? setShowOrHideConfirmPassword("text")
-                                        : setShowOrHideConfirmPassword("password");
+                                        : setShowOrHideConfirmPassword(
+                                              "password"
+                                          );
                                 }}
                             >
                                 {showOrHideConfirmPassword === "text" ? (

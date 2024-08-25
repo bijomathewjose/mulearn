@@ -1,22 +1,20 @@
-import {
-    MuButton,
-    PowerfulButton
-} from "@/MuLearnComponents/MuButtons/MuButton";
+import { PowerfulButton } from "@/MuLearnComponents/MuButtons/MuButton";
 import Pagination from "@/MuLearnComponents/Pagination/Pagination";
 import THead from "@/MuLearnComponents/Table/THead";
 import Table from "@/MuLearnComponents/Table/Table";
 import TableTop from "@/MuLearnComponents/TableTop/TableTop";
 import { dashboardRoutes } from "@/MuLearnServices/urls";
-import { useToast } from "@chakra-ui/react";
+
 import { useEffect, useRef, useState } from "react";
 import { AiOutlinePlusCircle } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import styles from "../InterestGroup/InterestGroup.module.css";
 import { deleteTask, getTasks } from "./TaskApis";
+import { Blank } from "@/MuLearnComponents/Table/Blank";
+import MuModal from "@/MuLearnComponents/MuModal/MuModal";
+import TaskForm from "./TaskForm";
 
-type Props = {};
-
-export const Tasks = (props: Props) => {
+export const Tasks = () => {
     const [data, setData] = useState<any[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
@@ -25,26 +23,37 @@ export const Tasks = (props: Props) => {
     const [sort, setSort] = useState("");
     const firstFetch = useRef(true);
     const navigate = useNavigate();
-    const toast = useToast();
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [taskId, setTaskId] = useState<string | number | boolean>("");
+    const TaskRef = useRef<any>(null);
 
     const columnOrder: ColOrder[] = [
         { column: "title", Label: "Title", isSortable: true },
-        { column: "hashtag", Label: "Hashtag", isSortable: false },
-        { column: "org", Label: "Organization", isSortable: false },
-        { column: "active", Label: "Active", isSortable: false },
+        { column: "hashtag", Label: "Hashtag", isSortable: true },
+        { column: "org", Label: "Organization", isSortable: true },
+        { column: "active", Label: "Active", isSortable: true },
         { column: "karma", Label: "Karma", isSortable: true },
-        { column: "usage_count", Label: "Usage Count", isSortable: false },
+        { column: "usage_count", Label: "Usage Count", isSortable: true },
         {
             column: "variable_karma",
             Label: "Variable Karma",
-            isSortable: false
+            isSortable: true
         },
+        { column: "description", Label: "Description", isSortable: true },
+        { column: "ig", Label: "Interest Group", isSortable: true },
+        { column: "level", Label: "Level", isSortable: true },
+        { column: "channel", Label: "Channel", isSortable: true },
+        { column: "event", Label: "Event", isSortable: true },
+        { column: "bonus_time", Label: "Bonus time", isSortable: true },
+        { column: "bonus_karma", Label: "Bonus karma", isSortable: true },
         { column: "updated_by", Label: "Updated By", isSortable: true },
         { column: "updated_at", Label: "Updated On", isSortable: true },
-        { column: "created_by", Label: "Created By", isSortable: false },
+        { column: "created_by", Label: "Created By", isSortable: true },
         { column: "created_at", Label: "Created On", isSortable: true }
     ];
-
+    console.log(data);
     const handleNextClick = () => {
         const nextPage = currentPage + 1;
         setCurrentPage(nextPage);
@@ -126,18 +135,31 @@ export const Tasks = (props: Props) => {
 
         //console.log(`Icon clicked for column: ${column}`);
     };
-    console.log(data);
+
     const handleEdit = (id: string | number | boolean) => {
-        console.log(id);
-        navigate(`/dashboard/tasks/edit/${id}`);
+        setTaskId(id);
+        setIsEditMode(true);
+        setIsModalOpen(true);
+        //navigate(`/dashboard/tasks/edit/${id}`);
     };
 
     const handleDelete = (id: string | undefined) => {
-        deleteTask(id, toast);
+        deleteTask(id);
+        setData(data.filter(item => item?.id !== id));
+        // getTasks(
+        //     setData,
+        //     1,
+        //     perPage,
+        //     setIsLoading,
+        //     setTotalPages,
+        //     "",
+        // );
     };
 
     const handleCreate = () => {
-        navigate("/dashboard/tasks/create");
+        setIsEditMode(false);
+        setIsModalOpen(true);
+        //navigate("/dashboard/tasks/create");
     };
 
     return (
@@ -161,6 +183,21 @@ export const Tasks = (props: Props) => {
                     Create
                 </PowerfulButton>
             </div>
+
+            <MuModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={isEditMode ? "Edit Task" : "Create Task"}
+                type={"success"}
+                onDone={() => TaskRef.current?.handleSubmitExternally()}
+            >
+                <TaskForm
+                    ref={TaskRef}
+                    id={isEditMode ? taskId.toString() : ""}
+                    isEditMode={isEditMode}
+                    closeModal={() => setIsModalOpen(false)}
+                />
+            </MuModal>
 
             {data && (
                 <>
@@ -200,7 +237,7 @@ export const Tasks = (props: Props) => {
                                 />
                             )}
                         </div>
-                        {/*use <Blank/> when u don't need <THead /> or <Pagination inside <Table/> cause <Table /> needs atleast 2 children*/}
+                        <Blank />
                     </Table>
                 </>
             )}

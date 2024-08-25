@@ -1,5 +1,6 @@
 import { privateGateway } from "@/MuLearnServices/apiGateways";
 import { dashboardRoutes } from "@/MuLearnServices/urls";
+import toast from "react-hot-toast";
 
 type shortUrlData = UseStateFunc<any>;
 type campusData = UseStateFunc<any>;
@@ -14,8 +15,10 @@ export const getShortenUrls = (
     selectedValue: number,
     setTotalPages?: UseStateFunc<number>,
     search?: string,
-    sortID?: string
+    sortID?: string,
+    setLoading?: UseStateFunc<boolean>
 ) => {
+    setLoading && setLoading(true);
     privateGateway
         .get(dashboardRoutes.getShortenUrl, {
             params: {
@@ -47,11 +50,13 @@ export const getShortenUrls = (
         )
         .catch(error => {
             console.log(error);
+        })
+        .finally(() => {
+            setLoading && setLoading(false);
         });
 };
 
 export const createShortenUrl = (
-    toast: ToastAsPara,
     urlData: any,
     formik: any
     // setHasValidationError: hasValidationError
@@ -60,26 +65,14 @@ export const createShortenUrl = (
         privateGateway
             .post(dashboardRoutes.createShortenUrl, urlData)
             .then(response => {
-                //console.log(response.data.response);
                 resolve(true);
-                toast({
-                    title: "Shorten Url Created",
-                    description: "its added to your list",
-                    status: "success",
-                    duration: 3000,
-                    isClosable: true
-                });
+
+                toast.success("Shorten Url Created");
             })
             .catch((error: APIError<{ general: string[] }>) => {
                 reject(false);
                 error?.response?.data?.message?.general?.length != 0 &&
-                    toast({
-                        title: error.response.data.message.general[0],
-                        description: "",
-                        status: "error",
-                        duration: 3000,
-                        isClosable: true
-                    });
+                    toast.error(error.response.data.message.general[0]);
                 if (
                     error.response.data.message &&
                     Object.keys(error.response.data.message).length > 0
@@ -101,7 +94,6 @@ export const createShortenUrl = (
 
 export const editShortenUrl = (
     id: string,
-    toast: ToastAsPara,
     urlEditedData: any,
     formik: any
 ): Promise<boolean> => {
@@ -112,18 +104,11 @@ export const editShortenUrl = (
                 urlEditedData
             )
             .then(response => {
-                //console.log(response.data.response);
                 resolve(true);
-                toast({
-                    title: "Shorten Url Edited",
-                    description: "its added to your list",
-                    status: "success",
-                    duration: 3000,
-                    isClosable: true
-                });
+
+                toast.success("Shorten Url Edited");
             })
             .catch(error => {
-                // console.log(error.response.data.message.general[0]);
                 reject(false);
                 if (
                     error.response.data.message &&
@@ -141,31 +126,40 @@ export const editShortenUrl = (
                     );
                 }
                 error.response.data.message.general.length != 0 &&
-                    toast({
-                        title: error.response.data.message.general[0],
-                        description: "",
-                        status: "error",
-                        duration: 3000,
-                        isClosable: true
-                    });
+                    toast.error(error.response.data.message.general[0]);
             });
     });
 };
 
-export const deleteShortenUrl = (id: string, toast: ToastAsPara) => {
+export const deleteShortenUrl = (id: string) => {
     privateGateway
         .delete(dashboardRoutes.deleteShortenUrl.replace("${urlId}", id))
         .then(response => {
             //console.log(response.data.response);
-            toast({
-                title: "Shorten Url Deleted",
-                description: "it's deleted from your list",
-                status: "error",
-                duration: 3000,
-                isClosable: true
-            });
+
+            toast.error("Shorten Url Deleted");
         })
         .catch(error => {
             console.log(error);
         });
+};
+
+export const getAnalytics = (
+    // setResponseData: shortUrlData,
+    id: string
+): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+        privateGateway
+            .get(dashboardRoutes.getAnalytics.replace("${urlId}", id))
+            .then(response => {
+                resolve(response.data.response);
+                // console.log(response.data.response);
+
+                // setResponseData(response.data.response);
+            })
+            .catch(error => {
+                reject(false);
+                console.log(error);
+            });
+    });
 };

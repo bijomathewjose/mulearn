@@ -8,7 +8,7 @@
     width: 100%;
     z-index: 50;
     display: flex;
-    transition: .3s ease;
+    transition: 0.3s ease;
     transform: scale(0);
     flex-direction: column;
     align-items: center;
@@ -16,7 +16,7 @@
     .share_pop_up {
         margin: 15dvh auto auto;
         height: auto;
-        width: 400px;
+        width: 450px;
         background: white;
         border-radius: 10px;
         box-shadow: 1px 1px 20px 1px #8c8c8c47;
@@ -39,10 +39,12 @@
             }
 
             & button {
+
                 width: 100%;
                 padding: 16px;
-                background: #F3F3F4;
+                background: red;
                 border-radius: 10px;
+                color: white
             }
 
             .profile_state {
@@ -64,8 +66,9 @@
                 gap: 10px;
                 width: 100%;
 
+
                 .embed_copy_btn {
-                    background: #456FF6;
+                    background: #456ff6;
                     color: #fff;
                     margin: 0px 0px -8px 0px;
                     display: flex;
@@ -75,7 +78,7 @@
                     position: relative;
 
                     ::hover {
-                        background: #456FF6;
+                        background: #456ff6;
                         color: #fff;
                     }
 
@@ -111,7 +114,7 @@
                     margin: auto;
                     padding: 8px;
                     border-radius: 10px;
-                    border: 1px solid #F3F3F4;
+                    border: 1px solid #f3f3f4;
                     display: flex;
                     justify-content: center;
                 }
@@ -137,7 +140,7 @@
                     cursor: pointer;
                     padding: 10px;
                     margin-right: -10px;
-                    color: black;
+                    color: var(--black);
                     /* background: white; */
                     /* border-radius: 50%; */
                     display: flex;

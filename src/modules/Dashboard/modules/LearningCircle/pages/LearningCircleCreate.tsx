@@ -10,7 +10,6 @@ import {
     createCircle
 } from "../services/LearningCircleAPIs";
 import { useNavigate } from "react-router-dom";
-
 type Props = {};
 
 type interestGroupType = {
@@ -27,7 +26,8 @@ const LearningCircleCreate = (props: Props) => {
         circle_name: Yup.string()
             .required("Required")
             .min(2, "Too Short!")
-            .max(30, "Too Long!"),
+            .max(30, "Too Long!")
+            .matches(/^[^/<>[\]{}|]*$/, "Invalid characters detected"), // Custom validation for invalid characters
         interest_group: Yup.string().required("Required")
     });
 

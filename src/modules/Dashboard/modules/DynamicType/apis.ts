@@ -26,12 +26,6 @@ export const getTypes = async (errHandler: Function) => {
     }
 };
 
-// try{
-
-// }catch(err){
-//     errHandler(err)
-// }
-
 export const getDynamicRoles = async (
     errHandler: Function,
     setData: UseStateFunc<any>,
@@ -153,6 +147,7 @@ export const getDynamicUsers = async (
                 //storing the data json as id for fetching while deleting
                 data.push({
                     id: j.dynamic_user_id,
+                    name: j.full_name,
                     type: i.type,
                     email: j.email,
                     muid: j.muid

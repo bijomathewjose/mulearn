@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Select from "react-select";
 import styles from "@/MuLearnComponents/FormikComponents/FormComponents.module.css";
 import { useNavigate } from "react-router-dom";
-import { getCountryData } from "./apis/CountryAPI";
-import { MuButton } from "@/MuLearnComponents/MuButtons/MuButton";
+import {
+    MuButton,
+    PowerfulButton
+} from "@/MuLearnComponents/MuButtons/MuButton";
 import { getStateData } from "./apis/StateAPI";
 import { getZoneData } from "./apis/ZoneAPI";
 import { getDistrictData } from "./apis/DistrictAPI";
-import { useToast } from "@chakra-ui/react";
 
 interface SelectedDataProps {
     Country: { value: string; label: string } | null;
@@ -62,38 +63,6 @@ const LocationPopup: FC<LocationPopupProps> = ({
         Zone: null
     });
 
-    const navigate = useNavigate();
-    const toast = useToast();
-
-    useEffect(() => {
-        if (selectedData.Country === null) {
-            getCountryData(setCountryData, toast).then(() => setLoader(false));
-        }
-        if (selectedData.Country !== null) {
-            getStateData(
-                setStateData,
-                selectedData.Country?.value,
-                toast,
-                5,
-                1,
-                setTotalPages,
-                "",
-                ""
-            ).then(() => setLoader(false));
-        }
-        if (selectedData.Country !== null && selectedData.State !== null) {
-            getZoneData(
-                setZoneData,
-                selectedData.State?.value,
-                5,
-                1,
-                setTotalPages,
-                "",
-                ""
-            ).then(() => setLoader(false));
-        }
-    }, [selectedData]);
-
     interface Option {
         value: string;
         label: string;
@@ -138,7 +107,6 @@ const LocationPopup: FC<LocationPopupProps> = ({
                 getStateData(
                     handleData,
                     selectedData.Country?.value,
-                    toast,
                     5,
                     1,
                     setTotalPages,
@@ -167,28 +135,27 @@ const LocationPopup: FC<LocationPopupProps> = ({
                 handleCountry(selectedData.Country.label);
                 handleState(selectedData.State.label);
             }
-        } else if (activeItem === "District") {
-            if (
-                selectedData.Country &&
-                selectedData.Country.value &&
-                selectedData.State &&
-                selectedData.State.value &&
-                selectedData.Zone &&
-                selectedData.Zone.value
-            ) {
-                getDistrictData(
-                    handleData,
-                    selectedData.Zone.value,
-                    5,
-                    1,
-                    setTotalPages,
-                    "",
-                    ""
-                ).then(() => setLoader(false));
-                handleCountry(selectedData.Country.label);
-                handleState(selectedData.State.label);
-                handleZone(selectedData.Zone.label);
-            }
+        } else if (
+            activeItem === "District" &&
+            selectedData.Country &&
+            selectedData.Country.value &&
+            selectedData.State &&
+            selectedData.State.value &&
+            selectedData.Zone &&
+            selectedData.Zone.value
+        ) {
+            getDistrictData(
+                handleData,
+                selectedData.Zone.value,
+                5,
+                1,
+                setTotalPages,
+                "",
+                ""
+            ).then(() => setLoader(false));
+            handleCountry(selectedData.Country.label);
+            handleState(selectedData.State.label);
+            handleZone(selectedData.Zone.label);
         }
         handlePopup(false);
     }
@@ -208,13 +175,14 @@ const LocationPopup: FC<LocationPopupProps> = ({
                         <SelectionBox title="Zone" data={zoneData} />
                     )}
                     <div className="ml_popup_btn_container">
-                        <MuButton
-                            text={"Decline"}
+                        <PowerfulButton
                             className={styles.btn_cancel}
                             onClick={() => {
                                 handlePopup(false), handleDeclined(true);
                             }}
-                        />
+                        >
+                            Decline
+                        </PowerfulButton>
                         <button
                             type="submit"
                             className={styles.btn_submit}

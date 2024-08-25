@@ -9,11 +9,44 @@ import AuthRoutes from "./components/AuthRoutes";
 import Onboarding from "./modules/Common/Authentication/pages/Onboarding";
 import Login from "./modules/Common/Authentication/pages/Login";
 import ForgotPassword from "./modules/Common/Authentication/pages/ForgotPassword";
-import ResetPassword from "./modules/Common/Authentication/pages/ResetPassword";
+
 import PrivateRoutes from "./components/PrivateRoutes";
 import DashboardRootLayout from "./modules/Dashboard/layouts/DashboardRootLayout";
 import NotFound from "./components/NotFound";
 
+import { roles, managementTypes } from "./services/types";
+import SecureAuthRoutes from "./services/authCheck";
+
+import { CampusStudentList, ConnectDiscord } from "./modules/Dashboard/modules";
+
+import LandingPage from "./modules/Public/LearningCircles/pages/LandingPage";
+import ProfileV2 from "./modules/Dashboard/modules/ProfileV2/pages/Profile";
+import AccountCreation from "./modules/Common/Authentication/pages/Onboarding/AccountCreation/AccountCreation";
+import Rolepage from "./modules/Common/Authentication/pages/Onboarding/RolePage/RolePage";
+import CollegePage from "./modules/Common/Authentication/pages/Onboarding/CollegePage/CollegePage";
+import CompanyPage from "./modules/Common/Authentication/pages/Onboarding/CompanyPage/CompanyPage";
+import SignIn from "./modules/Common/Authentication/pages/Onboarding/SignIn/SignIn";
+
+import ErrorLog from "./modules/Dashboard/modules/ErrorLog/ErrorLog";
+import KKEMEventBeyondUs from "./modules/Public/KKEM/modules/KKEMEventTemplate/KKEMEventBeyondUs";
+
+import LearningCircles from "./modules/Public/KKEM/modules/Dashboard/LearningCircles/LearningCircles";
+import ForgetPassword from "./modules/Common/Authentication/pages/Onboarding/ForgetPassword/ForgetPassword";
+import ResetPassword from "./modules/Common/Authentication/pages/Onboarding/ResetPassword/ResetPassword";
+import LcDashboard from "./modules/Dashboard/modules/LearningCircle/pages/LcDashboard/LcDashboard";
+import { Toaster } from "react-hot-toast";
+import CommunityPage from "./modules/Common/Authentication/pages/Onboarding/CommunityPage/CommunityPage";
+import Foundation from "./modules/Public/Foundation/Foundation";
+import Channels from "./modules/Dashboard/modules/Channels/Pages/Channels";
+import Settings from "./modules/Dashboard/modules/Settings/Settings";
+import Account from "./modules/Dashboard/modules/Settings/pages/Account/Account";
+import DiscordModeration from "./modules/Dashboard/modules/DiscordModeration/DiscordModeration";
+import Test from "./modules/Dashboard/modules/Test/Test";
+import Analytics from "./modules/Dashboard/modules/UrlShortener/Pages/Analytics";
+import Donation from "./modules/Public/Donation/Donation";
+import Refund from "./modules/Public/Donation/pages/Refund";
+import DonationSuccess from "./modules/Public/Donation/pages/DonationSuccess";
+import OpenGrad from "./modules/Dashboard/modules/OpenGrad";
 
 const Profile = lazy(
     () => import("./modules/Dashboard/modules/Profile/pages/Profile")
@@ -32,18 +65,17 @@ const Tasks = lazy(() =>
         default: module.Tasks
     }))
 );
-const CreateOrganization = lazy(
-    () => import("./modules/Dashboard/modules/Organizations/CreateOrganization")
+
+const TaskType = lazy(() =>
+    import("./modules/Dashboard/modules/TaskType/TaskType").then(module => ({
+        default: module.TaskType
+    }))
 );
-const DeleteOrganizations = lazy(
-    () =>
-        import("./modules/Dashboard/modules/Organizations/DeleteOrganizations")
-);
-const ManageUsersCreate = lazy(
-    () => import("./modules/Dashboard/modules/ManageUsers/ManageUsersCreate")
-);
-const ManageUsersEdit = lazy(
-    () => import("./modules/Dashboard/modules/ManageUsers/ManageUsersEdit")
+
+const Events = lazy(() =>
+    import("./modules/Dashboard/modules/Events/Events").then(module => ({
+        default: module.Events
+    }))
 );
 const DynamicType = lazy(
     () => import("./modules/Dashboard/modules/DynamicType/DynamicType")
@@ -63,8 +95,8 @@ const UserRoleVerificationEdit = lazy(
             "./modules/Dashboard/modules/UserRoleVerification/UserRoleVerificationEdit"
         )
 );
-const EditOrgnaization = lazy(
-    () => import("./modules/Dashboard/modules/Organizations/EditOrganization")
+const Affiliation = lazy(
+    () => import("./modules/Dashboard/modules/Affiliation/Pages/Affiliation")
 );
 const UrlShortener = lazy(
     () => import("./modules/Dashboard/modules/UrlShortener/Pages/UrlShortener")
@@ -77,6 +109,9 @@ const TaskCreate = lazy(
 );
 const TaskBulkImport = lazy(
     () => import("./modules/Dashboard/modules/Tasks/TaskBulkImport")
+);
+const RolesBulkImport = lazy(
+    () => import("./modules/Dashboard/modules/ManageRoles/RolesBulkImport")
 );
 const Hackathon = lazy(
     () => import("./modules/Dashboard/modules/Hackathon/pages/Hackathon")
@@ -105,16 +140,19 @@ const HackathonOrganizers = lazy(() =>
 const Organizations = lazy(
     () => import("./modules/Dashboard/modules/Organizations/Organizations")
 );
+const OrganizationTransfer = lazy(
+    () =>
+        import(
+            "./modules/Dashboard/modules/OrganizationTransfer/components/organizationTransfer"
+        )
+);
 const ManageUsers = lazy(
     () => import("./modules/Dashboard/modules/ManageUsers/ManageUsers")
 );
 const InterestGroup = lazy(
     () => import("./modules/Dashboard/modules/InterestGroup/InterestGroup")
 );
-const InterestGroupCreate = lazy(
-    () =>
-        import("./modules/Dashboard/modules/InterestGroup/InterestGroupCreate")
-);
+
 const HackathonDetails = lazy(
     () => import("./modules/Dashboard/modules/Hackathon/pages/HackathonDetails")
 );
@@ -144,35 +182,72 @@ const CollegeLevels = lazy(
 );
 
 const Refer = lazy(() => import("./modules/Dashboard/modules/Refer/Refer"));
-const LearningCircle = lazy(() => import("./modules/Dashboard/modules/LearningCircle/pages/LearningCircle"));
-const LearningCircleCreate = lazy(() => import("./modules/Dashboard/modules/LearningCircle/pages/LearningCircleCreate"));
-const FindCircle = lazy(() => import("./modules/Dashboard/modules/LearningCircle/pages/LearningCircleFind"));
-const Departments = lazy(() => import("./modules/Dashboard/modules/Departments/Departments"));
-const LearningCircleLandingPage = lazy(() => import("./modules/Dashboard/modules/LearningCircle/pages/LearningCircleLandingPage"));
-
-
-import { roles } from "./services/types";
-import SecureAuthRoutes from "./services/authCheck";
-
-import { CampusStudentList, ConnectDiscord } from "./modules/Dashboard/modules";
-
-import LandingPage from "./modules/Public/LearningCircles/pages/LandingPage";
-import ProfileV2 from "./modules/Dashboard/modules/ProfileV2/pages/Profile";
-import AccountCreation from "./modules/Common/Authentication/pages/Onboarding/AccountCreation/AccountCreation";
-import Rolepage from "./modules/Common/Authentication/pages/Onboarding/RolePage/RolePage";
-import CollegePage from "./modules/Common/Authentication/pages/Onboarding/CollegePage/CollegePage";
-import CompanyPage from "./modules/Common/Authentication/pages/Onboarding/CompanyPage/CompanyPage";
-import SignIn from "./modules/Common/Authentication/pages/Onboarding/SignIn/SignIn";
-
-import KKEMEventTemplate from "./modules/Public/KKEM/modules/KKEMEventTemplate/KKEMEventTemplate";
-import ErrorLog from "./modules/Dashboard/modules/ErrorLog/ErrorLog";
+const LearningCircle = lazy(
+    () =>
+        import(
+            "./modules/Dashboard/modules/LearningCircle/pages/LearningCircle"
+        )
+);
+const LearningCircleCreate = lazy(
+    () =>
+        import(
+            "./modules/Dashboard/modules/LearningCircle/pages/LearningCircleCreate"
+        )
+);
+const FindCircle = lazy(
+    () =>
+        import(
+            "./modules/Dashboard/modules/LearningCircle/pages/LearningCircleFind"
+        )
+);
+const Departments = lazy(
+    () => import("./modules/Dashboard/modules/Departments/Departments")
+);
+const LearningCircleLandingPage = lazy(
+    () =>
+        import(
+            "./modules/Dashboard/modules/LearningCircle/pages/LearningCircleLandingPage"
+        )
+);
+const MarketPlaceHistory = lazy(
+    () => import("./modules/Dashboard/modules/Marketplace/MarketPlaceHistory")
+);
+const Marketplace = lazy(
+    () =>
+        import(
+            "./modules/Dashboard/modules/Marketplace/UserMarketplace/UserMarketplce"
+        )
+);
+const MarketAddItem = lazy(
+    () =>
+        import(
+            "./modules/Dashboard/modules/Marketplace/MarketAddItem/MarketAddItem"
+        )
+);
+const AdminMarketPlace = lazy(
+    () =>
+        import(
+            "./modules/Dashboard/modules/Marketplace/AdminMarketplace/AdminMarketplace"
+        )
+);
+const PurchaseInventory = lazy(
+    () =>
+        import(
+            "./modules/Dashboard/modules/Marketplace/PurchaseInventory/PurchaseInventory"
+        )
+);
 
 const ConnectedDevices = lazy(
     () => import("./modules/Dashboard/modules/Settings/pages/ConnectedDevices")
 );
+const Wadhwani = lazy(() => import("./modules/Dashboard/modules/Wadhwani"));
+
+const Trivial = lazy(
+    () => import("./modules/Public/TrivialIdeas/modules/trivial")
+);
 
 function App() {
-    const RoleChecker = SecureAuthRoutes();
+    const AuthChecker = SecureAuthRoutes();
     const router = createBrowserRouter([
         // Add redirect from '/' to '/login'
         {
@@ -196,12 +271,29 @@ function App() {
             element: <KKEMAuth />
         },
         {
+            path: "donation",
+            element: <Donation />
+        },
+        {
+            path: "donation/success",
+            element: <DonationSuccess />
+        },
+        {
+            path: "donation/refund",
+            element: <Refund />
+        },
+        {
+            path: "trivial-ideas",
+            element: <Trivial />
+        },
+        {
             path: "/",
             element: <AuthRoutes />,
             children: [
-                { path: "register", element: <Onboarding /> },
-                { path: "login", element: <Login /> },
-                { path: "forgot-password", element: <ForgotPassword /> },
+                { path: "register/:role", element: <AccountCreation /> },
+                { path: "register/", element: <AccountCreation /> },
+                { path: "login", element: <SignIn /> },
+                { path: "forgot-password", element: <ForgetPassword /> },
                 { path: "reset-password", element: <ResetPassword /> }
             ]
         },
@@ -209,22 +301,15 @@ function App() {
             path: "/signin",
             element: <SignIn />
         },
+        // {
+        //     path: "/signup/:role",
+        //     element: <AccountCreation />
+        // },
         {
-            path: "/signup",
-            element: <AccountCreation />
-        },
-        {
-            path: "/role",
+            path: "register/about",
             element: <Rolepage />
         },
-        {
-            path: "/college",
-            element: <CollegePage />
-        },
-        {
-            path: "/company",
-            element: <CompanyPage />
-        },
+        // { path: "register/select-community", element: <CommunityPage /> },
         {
             path: "/",
             element: <PrivateRoutes />,
@@ -240,53 +325,39 @@ function App() {
                             element: <ConnectDiscord />
                         },
                         {
+                            path: "wadhwani",
+                            element: <Wadhwani />
+                        },
+                        {
+                            path: "opengrad",
+                            element: <OpenGrad />
+                        },
+                        {
                             path: "refer",
-                            element: (
-                                <RoleChecker
-                                    roles={[roles.STUDENT, roles.ADMIN]}
-                                    children={<Refer />}
-                                />
-                            )
+                            element: <Refer />
                         },
                         {
                             path: "interest-groups",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN, roles.FELLOW]}
+                                    dynamicType={[
+                                        managementTypes.INTEREST_GROUP
+                                    ]}
                                     children={<InterestGroup />}
                                 />
                             )
                         },
                         {
-                            path: "interest-groups/create",
-                            element: <InterestGroupCreate />
-                        },
-                        {
-                            path: "interest-groups/edit/:id",
-                            element: <InterestGroupCreate />
-                        },
-                        {
-                            path: "organizations/create",
-                            element: <CreateOrganization />
-                        },
-                        {
-                            path: "organizations/edit",
-                            element: (
-                                <RoleChecker
-                                    roles={[roles.ADMIN]}
-                                    children={<EditOrgnaization />}
-                                />
-                            )
-                        },
-                        {
-                            path: "organizations/delete/:id",
-                            element: <DeleteOrganizations />
-                        },
-                        {
                             path: "campus-details",
                             element: (
-                                <RoleChecker
-                                    roles={[roles.CAMPUS_LEAD, roles.ENABLER]}
+                                <AuthChecker
+                                    // might have to remove campus_lead and enabler with lead_enabler only
+                                    roles={[
+                                        roles.CAMPUS_LEAD,
+                                        roles.LEAD_ENABLER
+                                    ]}
+                                    dynamicType={[managementTypes.CAMPUS]}
                                     children={<CampusStudentList />}
                                 />
                             )
@@ -294,25 +365,21 @@ function App() {
                         {
                             path: "manage-users",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
+                                    dynamicType={[
+                                        managementTypes.USER_MANAGEMENT
+                                    ]}
                                     children={<ManageUsers />}
                                 />
                             )
                         },
                         {
-                            path: "manage-users/create",
-                            element: <ManageUsersCreate />
-                        },
-                        {
-                            path: "manage-users/edit/:id",
-                            element: <ManageUsersEdit />
-                        },
-                        {
                             path: "manage-roles",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
+                                    dynamicType={[managementTypes.MANAGE_ROLES]}
                                     children={<ManageRoles />}
                                 />
                             )
@@ -320,8 +387,9 @@ function App() {
                         {
                             path: "dynamic-type",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
+                                    dynamicType={[managementTypes.DYNAMIC_TYPE]}
                                     children={<DynamicType />}
                                 />
                             )
@@ -330,7 +398,7 @@ function App() {
                         {
                             path: "user-role-verification",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN, roles.FELLOW]}
                                     children={<UserRoleVerification />}
                                 />
@@ -343,7 +411,7 @@ function App() {
                         {
                             path: "manage-departments",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN, roles.FELLOW]}
                                     children={<Departments />}
                                 />
@@ -352,7 +420,7 @@ function App() {
                         {
                             path: "zonal-dashboard",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[
                                         roles.ADMIN,
                                         roles.FELLOW,
@@ -365,7 +433,7 @@ function App() {
                         {
                             path: "district-dashboard",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[
                                         roles.ADMIN,
                                         roles.FELLOW,
@@ -378,7 +446,7 @@ function App() {
                         {
                             path: "organizations",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
                                     children={<Organizations />}
                                 />
@@ -387,8 +455,12 @@ function App() {
                         {
                             path: "college-levels",
                             element: (
-                                <RoleChecker
-                                    roles={[roles.ADMIN, roles.FELLOW]}
+                                <AuthChecker
+                                    roles={[
+                                        roles.ADMIN,
+                                        roles.FELLOW,
+                                        roles.CAMPUS_ACTIVATION_TEAM
+                                    ]}
                                     children={<CollegeLevels />}
                                 />
                             )
@@ -396,7 +468,7 @@ function App() {
                         {
                             path: "tasks",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
                                     children={<Tasks />}
                                 />
@@ -411,13 +483,35 @@ function App() {
                             element: <TaskEdit />
                         },
                         {
+                            path: "task-type",
+                            element: (
+                                <AuthChecker
+                                    roles={[roles.ADMIN]}
+                                    children={<TaskType />}
+                                />
+                            )
+                        },
+                        {
                             path: "tasks/bulk-import",
                             element: <TaskBulkImport />
                         },
                         {
+                            path: "roles/bulk-import",
+                            element: <RolesBulkImport />
+                        },
+                        {
+                            path: "events",
+                            element: (
+                                <AuthChecker
+                                    roles={[roles.ADMIN]}
+                                    children={<Events />}
+                                />
+                            )
+                        },
+                        {
                             path: "karma-voucher",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN, roles.FELLOW]}
                                     children={<KarmaVoucher />}
                                 />
@@ -426,33 +520,80 @@ function App() {
                         {
                             path: "/dashboard/error-log",
                             element: (
-                                <RoleChecker
-                                    roles={[roles.ADMIN]}
+                                <AuthChecker
+                                    roles={[roles.ADMIN, roles.TECH_TEAM]}
                                     children={<ErrorLog />}
                                 />
                             )
                         },
                         {
                             path: "karma-voucher/bulk-import",
-                            element: <KarmaVoucherBulkImport />
+                            element: (
+                                <AuthChecker
+                                    roles={[roles.ADMIN, roles.FELLOW]}
+                                    children={<KarmaVoucherBulkImport />}
+                                />
+                            )
                         },
                         {
-                            path: "url-shortener",
+                            path: "channels",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[
                                         roles.ADMIN,
                                         roles.FELLOW,
                                         roles.ASSOCIATE
+                                    ]}
+                                    children={<Channels />}
+                                />
+                            )
+                        },
+                        {
+                            path: "affiliation",
+                            element: (
+                                <AuthChecker
+                                    roles={[
+                                        roles.ADMIN,
+                                        roles.FELLOW,
+                                        roles.ASSOCIATE
+                                    ]}
+                                    children={<Affiliation />}
+                                />
+                            )
+                        },
+                        {
+                            path: "url-shortener",
+                            element: (
+                                <AuthChecker
+                                    roles={[
+                                        roles.ADMIN,
+                                        roles.FELLOW,
+                                        roles.ASSOCIATE
+                                    ]}
+                                    dynamicType={[
+                                        managementTypes.URL_SHORTENER
                                     ]}
                                     children={<UrlShortener />}
                                 />
                             )
                         },
                         {
+                            path: "url-shortener/analytics/:id",
+                            element: (
+                                <AuthChecker
+                                    roles={[
+                                        roles.ADMIN,
+                                        roles.FELLOW,
+                                        roles.ASSOCIATE
+                                    ]}
+                                    children={<Analytics />}
+                                />
+                            )
+                        },
+                        {
                             path: "hackathon",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
                                     children={<Hackathon />}
                                 />
@@ -461,7 +602,7 @@ function App() {
                         {
                             path: "hackathon/edit/:id",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
                                     children={<HackathonCreate />}
                                 />
@@ -470,7 +611,7 @@ function App() {
                         {
                             path: "hackathon/create",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
                                     children={<HackathonCreate />}
                                 />
@@ -479,7 +620,7 @@ function App() {
                         {
                             path: "hackathon/details/:id",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
                                     children={<HackathonDetails />}
                                 />
@@ -488,7 +629,7 @@ function App() {
                         {
                             path: "hackathon/apply/:id",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
                                     children={<HackathonRegistration />}
                                 />
@@ -497,16 +638,25 @@ function App() {
                         {
                             path: "hackathon/applicants/:id",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
                                     children={<HackathonParticipants />}
                                 />
                             )
                         },
                         {
+                            path: "discord-moderation",
+                            element: (
+                                <AuthChecker
+                                    roles={[roles.ADMIN]}
+                                    children={<DiscordModeration />}
+                                />
+                            )
+                        },
+                        {
                             path: "manage-locations",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
                                     children={<ManageLocation />}
                                 />
@@ -523,7 +673,7 @@ function App() {
                         {
                             path: "hackathon/organizers/:id",
                             element: (
-                                <RoleChecker
+                                <AuthChecker
                                     roles={[roles.ADMIN]}
                                     children={<HackathonOrganizers />}
                                 />
@@ -538,22 +688,64 @@ function App() {
                             element: <LearningCircle />
                         },
                         {
+                            path: "learning-circle/dashboard/:id",
+                            element: <LcDashboard />
+                        },
+                        {
                             path: "learning-circle/find-circle",
                             element: <FindCircle />
                         },
                         {
                             path: "learning-circle/create-circle",
                             element: <LearningCircleCreate />
+                        },
+                        {
+                            path: "organization-transfer",
+                            element: (
+                                <AuthChecker
+                                    roles={[roles.ADMIN]}
+                                    children={<OrganizationTransfer />}
+                                />
+                            )
+                        },
+                        {
+                            path: "test",
+                            element: (
+                                <AuthChecker
+                                    roles={[roles.ADMIN]}
+                                    children={<Test />}
+                                />
+                            )
+                        },
+                        {
+                            path: "settings",
+                            element: <Settings />,
+                            children: [
+                                {
+                                    path: "account",
+                                    element: <Account />
+                                }
+                            ]
                         }
                         // {
-                        //     path: "settings",
-                        //     element: <Settings />,
-                        //     children: [
-                        //         {
-                        //             path: "connected-devices",
-                        //             element: <ConnectedDevices />
-                        //         }
-                        //     ]
+                        //     path: "marketplace",
+                        //     element: <Marketplace />
+                        // },
+                        // {
+                        //     path: "marketplace-history",
+                        //     element: <MarketPlaceHistory />
+                        // },
+                        // {
+                        //     path: "marketplace-additem",
+                        //     element: <MarketAddItem />
+                        // },
+                        // {
+                        //     path: "marketplace-admin",
+                        //     element: <AdminMarketPlace />
+                        // },
+                        // {
+                        //     path: "marketplace-purchaseinv",
+                        //     element: <PurchaseInventory />
                         // }
                     ]
                 }
@@ -572,12 +764,25 @@ function App() {
             element: <LandingPage />
         },
         {
-            path: "/kkem/events/:id",
-            element: <KKEMEventTemplate />
+            path: "/kkem/events/beyondus",
+            element: <KKEMEventBeyondUs />
+        },
+        {
+            path: "/kkem/learningcircles/dashboard",
+            element: <LearningCircles />
+        },
+        {
+            path: "/foundation",
+            element: <Foundation />
         }
     ]);
 
-    return <RouterProvider router={router} />;
+    return (
+        <>
+            <RouterProvider router={router} />
+            <Toaster position="bottom-center" reverseOrder={true} />
+        </>
+    );
 }
 
 export default App;

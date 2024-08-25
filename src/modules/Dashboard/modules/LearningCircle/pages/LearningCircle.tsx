@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import axios, { AxiosResponse } from "axios";
 import styles from "./LearningCircle.module.css";
 import pic from "../../Profile/assets/images/dpm.webp";
@@ -8,7 +8,7 @@ import {
     leaveLc,
     removeMember,
     setLCMeetTime,
-    toast,
+    transferLead,
     updateLcNote
 } from "../services/LearningCircleAPIs";
 import { useNavigate, useParams } from "react-router-dom";
@@ -25,8 +25,26 @@ import { Tooltip } from "react-tooltip";
 import Modal from "@/MuLearnComponents/Modal/Modal";
 import data from "../data/data.json";
 import { BsFillBookmarksFill } from "react-icons/bs";
+import { TbArrowsTransferUp } from "react-icons/tb";
+import Select from "react-select";
+import toast from "react-hot-toast";
 
 type Props = {};
+
+const generateTimeOptions = () => {
+    const options = [];
+    const intervals = ["00", "30"]; // for 30-minute intervals
+
+    for (let i = 1; i <= 12; i++) {
+        for (let interval of intervals) {
+            const time = `${i.toString().padStart(2, "0")}:${interval}`;
+            options.push({ value: time + " AM", label: time + " AM" });
+            options.push({ value: time + " PM", label: time + " PM" });
+        }
+    }
+
+    return options;
+};
 
 const LearningCircle = (props: Props) => {
     const [lc, setLc] = useState<LcDetail>();
@@ -45,6 +63,11 @@ const LearningCircle = (props: Props) => {
 
     const [openRemoveConfrim, setOpenRemoveConfirm] = useState(false);
     const [resourceLink, setResourceLink] = useState("");
+    const [username, setUsername] = useState("");
+    const [userId, setUserId] = useState<string>("");
+
+    const [transferConfirm, setTransferConfirm] = useState(false);
+
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -71,26 +94,29 @@ const LearningCircle = (props: Props) => {
                 setValidAvatar(valid => [...valid, member.id]);
             }
         });
-    }, [lc]);
+    }, []);
 
     useEffect(() => {
-        //find the correspoding resourceLink from the data by matching the igcode from lc
+        //find the corresponding resourceLink from the data by matching the igcode from lc
         const igCode = lc?.ig_code;
-        const resourceLink = data.find(
-            ig => ig.igcode === igCode
-        )?.resourcelink;
+        const resourceLink = data.find(ig => ig.igcode === igCode)
+            ?.resourcelink;
         setResourceLink(resourceLink || "");
-    }, [lc]);
+
+        if (lc) {
+            const sortedLc = [...lc.members].sort((a, b) => b.karma - a.karma);
+            setLc(prevLc => ({
+                ...prevLc!,
+                members: sortedLc
+            }));
+        }
+    }, []);
 
     useEffect(() => {
-        if (lc && !lc.is_member) {
-            toast({
-                title: "Access Denied",
-                description: "Make sure you are a member of that circle",
-                status: "error",
-                duration: 2000,
-                isClosable: true
-            });
+        if (lc && !lc.is_member && lc?.circle_code?.length > 0) {
+            toast.error(
+                "Access Denied, Make sure you are a member of that circle"
+            );
             navigate("/dashboard/learning-circle/");
         }
     }, [lc]);
@@ -130,19 +156,13 @@ const LearningCircle = (props: Props) => {
 
     const handleSchedule = async (event: any) => {
         if (meetDays.length === 0 || meetTime === "" || meetVenue === "") {
-            toast({
-                title: "Please fill all the fields",
-                description: "",
-                status: "warning",
-                duration: 2000,
-                isClosable: true
-            });
+            toast.error("Please fill all the fields");
             return;
         }
 
         // console.log("Meet days & time", getNextDate(meetDays, meetTime)); // get next date of meeting
 
-        setLCMeetTime(meetTime, meetVenue, meetDays, id);
+        // setLCMeetTime(meetTime, meetVenue, meetDays, id);
         setTimeout(() => {
             getLcDetails(setLc, id);
         }, 2000);
@@ -157,8 +177,13 @@ const LearningCircle = (props: Props) => {
     };
     function handleRemove(circle: string | undefined, id: string): void {
         removeMember(circle, id, navigate);
+    }
+
+    function handleTransfer(circle: string): void {
+        console.log("New Lead", userId);
+        transferLead(circle, userId, navigate);
         setTimeout(() => {
-            navigate(`/dashboard/learning-circle/details/${id}`);
+            navigate(`/dashboard/learning-circle/dashboard/${id}`);
         }, 4000);
     }
 
@@ -167,6 +192,12 @@ const LearningCircle = (props: Props) => {
         return isInvalid ? pic : member?.profile_pic || pic;
     }
 
+    const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+        const inputValue = e.target.value;
+        const sanitizedInput = inputValue.replace(/[<>/]/g, ""); // Remove < and > characters
+
+        setNote(sanitizedInput);
+    };
     return (
         <>
             {temp ? (
@@ -236,10 +267,18 @@ const LearningCircle = (props: Props) => {
                                 <Modal
                                     setIsOpen={setIsOpen}
                                     id={"Leave"}
-                                    heading={"Leave Learning Circle"}
-                                    content={`Are you sure you want to leave ${lc?.name} ?`}
+                                    heading={
+                                        lc?.members.length === 1
+                                            ? "Delete Learning Circle"
+                                            : "Leave Learning Circle"
+                                    }
+                                    content={
+                                        lc?.members.length === 1
+                                            ? "Since you are the last member, the circle will be deleted, Once you leave."
+                                            : `Are you sure you want to leave ${lc?.name} ?`
+                                    }
                                     click={handleLeave}
-                                    type="error"
+                                    type="Leave"
                                 />
                             )}
                         </div>
@@ -286,11 +325,13 @@ const LearningCircle = (props: Props) => {
                                                     }
                                                 >
                                                     <div>
-                                                        <b>
-                                                            Venue:{" "}
-                                                            {lc?.meet_place}{" "}
-                                                            <br />
-                                                        </b>
+                                                        {lc?.meet_place && (
+                                                            <b>
+                                                                Venueasdfasdf:{" "}
+                                                                {lc?.meet_place}{" "}
+                                                                <br />
+                                                            </b>
+                                                        )}
                                                         {lc?.meet_time && (
                                                             <b>
                                                                 Time:{" "}
@@ -335,33 +376,66 @@ const LearningCircle = (props: Props) => {
                                                 weekly meeting
                                             </p>
                                         </div>
-                                        <div className={styles.InputSchedule}>
-                                            <div>
-                                                <input
-                                                    required
-                                                    type="time"
-                                                    value={meetTime}
-                                                    onChange={e => {
+
+                                        <div className={styles.dateandtime}>
+                                            <Select
+                                                options={generateTimeOptions()}
+                                                value={generateTimeOptions().find(
+                                                    option =>
+                                                        option.value ===
+                                                        convert24to12(meetTime)
+                                                )}
+                                                isSearchable={false}
+                                                onChange={e => {
+                                                    function convertTo24Hr(
+                                                        time: string
+                                                    ) {
+                                                        const [
+                                                            timeStr,
+                                                            modifier
+                                                        ] = time.split(" ");
+                                                        let [hours, minutes] =
+                                                            timeStr.split(":");
+                                                        if (hours === "12") {
+                                                            hours = "00";
+                                                        }
+                                                        if (modifier === "PM") {
+                                                            hours = String(
+                                                                parseInt(
+                                                                    hours,
+                                                                    10
+                                                                ) + 12
+                                                            );
+                                                        }
+                                                        return `${hours}:${minutes}`;
+                                                    }
+                                                    // console.log(e.value);
+                                                    e &&
                                                         setMeetTime(
-                                                            e.target.value
+                                                            convertTo24Hr(
+                                                                e.value.toString()
+                                                            )
                                                         );
-                                                    }}
-                                                    placeholder="meeting time"
-                                                />
-                                                <input
-                                                    required
-                                                    value={meetVenue}
-                                                    type="text"
-                                                    onChange={e => {
-                                                        setMeetVenue(
-                                                            e.target.value
-                                                        );
-                                                    }}
-                                                    placeholder="meeting venue"
-                                                />
-                                            </div>
+                                                }}
+                                                className={styles.inputTime}
+                                            />
+
+                                            <input
+                                                required
+                                                value={meetVenue}
+                                                type="text"
+                                                onChange={e => {
+                                                    setMeetVenue(
+                                                        e.target.value
+                                                    );
+                                                }}
+                                                placeholder="meeting venue"
+                                                className={styles.inputVenue}
+                                            />
+                                        </div>
+                                        <div className={styles.InputSchedule}>
                                             <div className={styles.weeks}>
-                                                <p>meeting days</p>
+                                                <p>Meeting Days</p>
                                                 <div className={styles.Lcweek}>
                                                     <div>
                                                         <input
@@ -501,7 +575,7 @@ const LearningCircle = (props: Props) => {
                                                     setFlag(false);
                                                     setTimeout(() => {
                                                         navigate(
-                                                            `/dashboard/learning-circle/details/${id}`
+                                                            `/dashboard/learning-circle/dashboard/${id}`
                                                         );
                                                     }, 2000);
                                                 }}
@@ -513,20 +587,18 @@ const LearningCircle = (props: Props) => {
                                     <div className={styles.LcNotedEvent}>
                                         <textarea
                                             value={note}
-                                            onChange={e => {
-                                                setNote(e.target.value);
-                                            }}
+                                            onChange={handleChange}
                                             placeholder="Notes"
                                         />
                                         <button
                                             className={styles.BtnBtn}
                                             onClick={() => {
-                                                updateLcNote(id, note);
+                                                // updateLcNote(id, note);
                                                 setTimeout(() => {
                                                     getLcDetails(setLc, id);
                                                     setFlag(true);
                                                     navigate(
-                                                        `/dashboard/learning-circle/details/${id}`
+                                                        `/dashboard/learning-circle/dashboard/${id}`
                                                     );
                                                 }, 2000);
                                             }}
@@ -538,7 +610,7 @@ const LearningCircle = (props: Props) => {
                             </div>
 
                             {lc?.pending_members &&
-                                lc.pending_members.length > 0 ? (
+                            lc.pending_members.length > 0 ? (
                                 <div className={styles.PendingApp}>
                                     <b className={styles.PendingTitle}>
                                         Pending approvals
@@ -590,7 +662,7 @@ const LearningCircle = (props: Props) => {
                                                                                 id
                                                                             );
                                                                             navigate(
-                                                                                `/dashboard/learning-circle/details/${id}`
+                                                                                `/dashboard/learning-circle/dashboard/${id}`
                                                                             );
                                                                         },
                                                                         2000
@@ -617,7 +689,7 @@ const LearningCircle = (props: Props) => {
                                                                                 id
                                                                             );
                                                                             navigate(
-                                                                                `/dashboard/learning-circle/details/${id}`
+                                                                                `/dashboard/learning-circle/dashboard/${id}`
                                                                             );
                                                                         },
                                                                         2000
@@ -675,8 +747,18 @@ const LearningCircle = (props: Props) => {
                                                         alt="Profile Picture"
                                                     />
                                                     <div>
-                                                        <div className={styles.username}>
-                                                            <p>{member.username}</p>
+                                                        <div
+                                                            className={
+                                                                styles.username
+                                                            }
+                                                        >
+                                                            <p>
+                                                                {
+                                                                    member.username
+                                                                }{" "}
+                                                                {member.is_lead &&
+                                                                    "(Lead)"}
+                                                            </p>
                                                         </div>
                                                         <span>
                                                             <img
@@ -690,16 +772,60 @@ const LearningCircle = (props: Props) => {
                                                 {lc.is_lead &&
                                                     !member.is_lead && (
                                                         <div>
-                                                            {/* <RiDeleteBin5Line
-                                                            data-tooltip-id="Icon"
-                                                            data-tooltip-content="leave circle"
-                                                            onClick={() => { handleRemove(id, member.id) }}
-                                                        /> */}
+                                                            <TbArrowsTransferUp
+                                                                size={24}
+                                                                onClick={() => {
+                                                                    setTransferConfirm(
+                                                                        true
+                                                                    );
+                                                                    setUsername(
+                                                                        member?.username
+                                                                    );
+                                                                    setUserId(
+                                                                        member?.id
+                                                                    );
+                                                                }}
+                                                            />
+                                                            {transferConfirm && (
+                                                                <Modal
+                                                                    click={() => {
+                                                                        console.log(
+                                                                            member
+                                                                        );
+                                                                        id &&
+                                                                            handleTransfer(
+                                                                                id
+                                                                            );
+                                                                    }}
+                                                                    content={`Are you want to transfer lead to ${username} of ${lc.name} ?`}
+                                                                    heading={
+                                                                        "Transfer Lead Position"
+                                                                    }
+                                                                    id={
+                                                                        "Transfer"
+                                                                    }
+                                                                    setIsOpen={
+                                                                        setTransferConfirm
+                                                                    }
+                                                                    type="Confirm"
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                {lc.is_lead &&
+                                                    !member.is_lead && (
+                                                        <div>
                                                             <RxCrossCircled
                                                                 size={24}
                                                                 onClick={() => {
                                                                     setOpenRemoveConfirm(
                                                                         true
+                                                                    );
+                                                                    setUsername(
+                                                                        member?.username
+                                                                    );
+                                                                    setUserId(
+                                                                        member?.id
                                                                     );
                                                                 }}
                                                             />
@@ -708,10 +834,10 @@ const LearningCircle = (props: Props) => {
                                                                     click={() => {
                                                                         handleRemove(
                                                                             id,
-                                                                            member.id
+                                                                            userId
                                                                         );
                                                                     }}
-                                                                    content={`Are you want to remove ${member?.username} from ${lc?.name} ?`}
+                                                                    content={`Are you want to remove ${username} from ${lc.name}?`}
                                                                     heading={
                                                                         "Remove user from Learning Cicle"
                                                                     }
@@ -734,10 +860,8 @@ const LearningCircle = (props: Props) => {
                     </div>
                 </div>
             ) : (
-                <div className={styles.spinner_container}>
-                    <div className={styles.spinner}>
-                        <MuLoader />{" "}
-                    </div>
+                <div className={styles.loader_container}>
+                    <MuLoader />
                 </div>
             )}
         </>

@@ -1,16 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./ConnectDiscord.module.css";
 import cdimage from "../assets/images/connectdiscordpng1.webp";
 import { getInfo } from "../services/apis";
-import { useToast } from "@chakra-ui/react";
 import { MdContentCopy } from "react-icons/md";
 import { BsDiscord } from "react-icons/bs";
 import MuLoader from "@/MuLearnComponents/MuLoader/MuLoader";
 import { PowerfulButton } from "@/MuLearnComponents/MuButtons/MuButton";
+import { FaInstagram } from "react-icons/fa6";
+import toast from "react-hot-toast";
 
 const ConnectDiscord = () => {
     const [muid, setMuid] = useState("");
-    const toast = useToast();
     const firstFetch = useRef(true);
     useEffect(() => {
         if (firstFetch.current) {
@@ -44,21 +44,19 @@ const ConnectDiscord = () => {
                                     variant="secondary"
                                     onClick={() => {
                                         navigator.clipboard.writeText(muid);
-                                        toast.closeAll();
-                                        toast({
-                                            title: "Copied to clipboard",
-                                            description:
-                                                "Please paste it in discord to connect your account",
-                                            status: "success",
-                                            duration: 9000,
-                                            isClosable: true
-                                        });
+
+                                        toast.success(
+                                            "Copied to clipboard, Please paste it in discord to connect your account"
+                                        );
                                     }}
                                 >
                                     <MdContentCopy />
                                     {muid}
                                 </PowerfulButton>
-                                <a href={ import.meta.env.VITE_DISCORD_INVITE_URL }
+                                <a
+                                    href={
+                                        import.meta.env.VITE_DISCORD_INVITE_URL
+                                    }
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
@@ -66,6 +64,17 @@ const ConnectDiscord = () => {
                                         <BsDiscord />
                                         Connect Discord
                                     </PowerfulButton>
+                                </a>
+                                <a
+                                    href="https://www.instagram.com/mulearn.official/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={styles.follow_us}
+                                >
+                                    <FaInstagram size={20} />
+                                    <p style={{ marginLeft: "0.3rem" }}>
+                                        Follow Us
+                                    </p>
                                 </a>
                             </div>
                         </div>
@@ -90,19 +99,21 @@ const ConnectDiscord = () => {
                                     </div>
                                     <div className={styles.box2}>
                                         <p>
-                                            From the menu shown aside select the
-                                            onboarding channel to continue.
+                                            From the sidebar select the
+                                            Aaronchettan to continue.
                                         </p>
                                         <p className={styles.p}>
-                                            Select the Onboarding Channel
+                                            Select the Aaronchettan Profile
                                         </p>
                                     </div>
                                     <div className={styles.box3}>
                                         <p>
-                                            From the opened channel click the
-                                            join now button.
+                                            From the opened direct message,
+                                            click the Connect Muid button.
                                         </p>
-                                        <p className={styles.p}>Join Now!</p>
+                                        <p className={styles.p}>
+                                            Connect Muid!
+                                        </p>
                                     </div>
                                     <div className={styles.box4}>
                                         <p>

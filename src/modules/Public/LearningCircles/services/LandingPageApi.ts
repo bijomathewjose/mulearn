@@ -12,7 +12,7 @@ export const fetchLC = async (
     setData: UseStateFunc<any>,
     district?: string,
     campus?: string,
-    ig?: string | null,
+    ig?: string | null
 ) => {
     setLoading(true);
     try {

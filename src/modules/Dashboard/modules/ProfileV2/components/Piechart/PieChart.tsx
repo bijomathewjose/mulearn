@@ -38,10 +38,10 @@ export function PieChart({ data }: any) {
             width={"100%"}
             height={
                 window.innerWidth > 1800
-                    ? "400px"
+                    ? "200px"
                     : window.innerWidth < 1400 && window.innerWidth > 900
-                    ? "400px"
-                    : "200px"
+                      ? "400px"
+                      : "200px"
             }
         />
     );

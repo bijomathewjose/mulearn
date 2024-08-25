@@ -1,4 +1,3 @@
-import { useToast } from "@chakra-ui/react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsPersonAdd } from "react-icons/bs";
@@ -6,13 +5,11 @@ import { LuCopy } from "react-icons/lu";
 import { MdOutlineUnpublished } from "react-icons/md";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import Modal from "@/MuLearnComponents/Modal/Modal";
-import {
-    deleteHackathon,
-    getHackathons,
-} from "../services/HackathonApis";
+import { deleteHackathon, getHackathons } from "../services/HackathonApis";
 import { HackList } from "../services/HackathonInterfaces";
 import styles from "../pages/HackathonCreate.module.css";
 import { FaThList } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 enum ModalType {
     Publish,
@@ -25,7 +22,7 @@ type Props = {
     ownData: HackList[];
     setOwnData: React.Dispatch<React.SetStateAction<HackList[]>>;
     setData: React.Dispatch<React.SetStateAction<HackList[]>>;
-    style?: React.CSSProperties
+    style?: React.CSSProperties;
 };
 
 const HackathonCardIconButtons = ({
@@ -37,12 +34,12 @@ const HackathonCardIconButtons = ({
     style
 }: Props) => {
     const navigate = useNavigate();
-    const toast = useToast();
 
     const shareData = {
-        title: hackathon.title as (string | undefined),
-        url: `${import.meta.env.VITE_FRONTEND_URL
-            }/dashboard/hackathon/details/${hackathon.id}`
+        title: hackathon.title as string | undefined,
+        url: `${
+            import.meta.env.VITE_FRONTEND_URL
+        }/dashboard/hackathon/details/${hackathon.id}`
     };
     const isShareable =
         window.navigator.canShare && window.navigator.canShare(shareData);
@@ -73,34 +70,47 @@ const HackathonCardIconButtons = ({
 
     function isDetailsComplete(hackathon: HackList) {
         const requiredFields: (keyof HackList)[] = [
-            'id', 'title', 'type', 'tagline', 'event_logo', 'banner', 'website',
-            'place', 'event_start', 'event_end', 'application_start',
-            'application_ends', 'description', 'participant_count', 'district',
-            'organisation', 'district_id', 'org_id', 'editable'
+            "id",
+            "title",
+            "type",
+            "tagline",
+            "event_logo",
+            "banner",
+            "website",
+            "place",
+            "event_start",
+            "event_end",
+            "application_start",
+            "application_ends",
+            "description",
+            "participant_count",
+            "district",
+            "organisation",
+            "district_id",
+            "org_id",
+            "editable"
         ];
 
-        return requiredFields.every(field => hackathon[field] !== undefined && hackathon[field] !== null);
+        return requiredFields.every(
+            field => hackathon[field] !== undefined && hackathon[field] !== null
+        );
     }
-
 
     const isDraft = hackathon.status === "Draft";
 
     return (
-        <div className={styles.shared} style={{ color: "var(--blue)", ...style }}>
+        <div
+            className={styles.shared}
+            style={{ color: "var(--blue)", ...style }}
+        >
             <div className={styles.shared2}>
                 <div className={styles.frame2}>
                     {hackathon.editable ? (
                         <>
-                            {/* <div className={styles.group}>
-                                <Link to={`/dashboard/hackathon/edit/${hackathon.id}`} >
-                                    <LuEdit
-                                        data-tooltip-id="Icon"
-                                        data-tooltip-content="Edit"
-                                    />
-                                </Link>
-                            </div> */}
                             <div className={styles.group}>
-                                <Link to={`/dashboard/hackathon/organizers/${hackathon.id}`} >
+                                <Link
+                                    to={`/dashboard/hackathon/organizers/${hackathon.id}`}
+                                >
                                     <BsPersonAdd
                                         data-tooltip-id="Icon"
                                         data-tooltip-content="Add Organizer"
@@ -111,11 +121,16 @@ const HackathonCardIconButtons = ({
                                 <RiDeleteBin5Line
                                     data-tooltip-id="Icon"
                                     data-tooltip-content="Delete"
-                                    onClick={() => toggleModal(index, ModalType[1])}
+                                    onClick={() =>
+                                        toggleModal(index, ModalType[1])
+                                    }
                                 />
                                 {isDeleteOpen[index] && (
-                                    <Modal id={hackathon.id}
-                                        setIsOpen={() => toggleModal(index, ModalType[1])}
+                                    <Modal
+                                        id={hackathon.id}
+                                        setIsOpen={() =>
+                                            toggleModal(index, ModalType[1])
+                                        }
                                         heading={"Delete"}
                                         content={`Are you sure you want to delete "${hackathon.title}" ?`}
                                         click={() => {
@@ -124,7 +139,13 @@ const HackathonCardIconButtons = ({
                                                 getHackathons(setOwnData);
                                                 getHackathons(setData);
                                             }, 1000);
-                                            setTimeout(() => navigate("/dashboard/hackathon"), 1000);
+                                            setTimeout(
+                                                () =>
+                                                    navigate(
+                                                        "/dashboard/hackathon"
+                                                    ),
+                                                1000
+                                            );
                                         }}
                                     />
                                 )}
@@ -161,7 +182,12 @@ const HackathonCardIconButtons = ({
                                         </div>
                                         {isPublishOpen[index] && (
                                             <Modal
-                                                setIsOpen={() => toggleModal(index, ModalType[0])}
+                                                setIsOpen={() =>
+                                                    toggleModal(
+                                                        index,
+                                                        ModalType[0]
+                                                    )
+                                                }
                                                 id={hackathon.id}
                                                 heading="Draft"
                                                 content={`Are you sure you want to set ${hackathon.title} to Draft`}
@@ -171,7 +197,9 @@ const HackathonCardIconButtons = ({
                                                     //     hackathon.status,
                                                     // );
                                                     setTimeout(() => {
-                                                        getHackathons(setOwnData);
+                                                        getHackathons(
+                                                            setOwnData
+                                                        );
                                                         getHackathons(setData);
                                                     }, 1000);
                                                     setTimeout(() => {
@@ -185,26 +213,23 @@ const HackathonCardIconButtons = ({
                                     </>
                                 )}
                             </div>
-
                         </>
-
                     ) : (
-                        <div className={styles.group}
+                        <div
+                            className={styles.group}
                             style={{ gridArea: "1 / 2 / 2 / 3" }}
                             onClick={() => {
-                                window.navigator.clipboard.writeText(shareData.url);
-                                toast({
-                                    title: "Success",
-                                    description: "Link copied to clipboard",
-                                    status: "success",
-                                    duration: 3000,
-                                    isClosable: true
-                                });
-                                if (isShareable) window.navigator.share(shareData);
+                                window.navigator.clipboard.writeText(
+                                    shareData.url
+                                );
+                                toast.success("Link copied to clipboard");
+                                if (isShareable)
+                                    window.navigator.share(shareData);
                             }}
                         >
-                            <LuCopy data-tooltip-id="Icon"
-                            // data-tooltip-content={`Copy${ isShareable ? "/Share" : ""}`}
+                            <LuCopy
+                                data-tooltip-id="Icon"
+                                // data-tooltip-content={`Copy${ isShareable ? "/Share" : ""}`}
                             />
                         </div>
                     )}

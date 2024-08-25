@@ -4,11 +4,10 @@ import { NavigateFunction } from "react-router-dom";
 import { useFormik } from "formik";
 import { getInfo } from "../../../Dashboard/modules/ConnectDiscord/services/apis";
 import { Dispatch, SetStateAction } from "react";
-import { ToastId, UseToastOptions } from "@chakra-ui/react";
 
 // Define the type of MyValues
 type NN = { name: string; id: string };
-type TT = { title: string; id: string };
+export type TT = { title: string; id: string };
 
 type InitialValues = {
     firstName: string;
@@ -30,14 +29,14 @@ type InitialValues = {
     mentorRole: string;
     areaOfInterest: never[];
     general: string;
-    referral_id: string;
+    muid: string;
 };
 type FormikType = ReturnType<typeof useFormik<InitialValues>>;
 
 type getAPI = UseStateFunc<TT[]>;
 type AoiAPI = UseStateFunc<NN[]>;
 
-type collegeOptions = UseStateFunc<
+export type collegeOptions = UseStateFunc<
     {
         value: string;
         label: string;
@@ -213,58 +212,26 @@ export const getInterests = (errorHandler: errorHandler, setAoiAPI: AoiAPI) => {
 };
 
 // request for community list
-export const getCommunities = (
-    errorHandler: errorHandler,
-    setCommunityAPI: getAPI
-) => {
+export const getCommunities = ({
+    errorHandler,
+    setCommunityAPI,
+    setIsLoading
+}: {
+    errorHandler?: errorHandler;
+    setCommunityAPI: getAPI;
+    setIsLoading?: UseStateFunc<boolean>;
+}) => {
+    setIsLoading && setIsLoading(true);
     publicGateway
         .get(onboardingRoutes.communityList)
         .then(response => {
             setCommunityAPI(response.data.response.communities);
         })
         .catch((error: APIError) => {
-            errorHandler(error.response.status, error.response.data.status);
+            errorHandler &&
+                errorHandler(error.response.status, error.response.data.status);
         });
-};
-
-export const createAccount = async ({
-    userData,
-    setIsSubmitting,
-    toast,
-    navigate
-}: {
-    userData: Object;
-    setIsSubmitting: Dispatch<SetStateAction<boolean>>;
-    toast: (options?: UseToastOptions | undefined) => ToastId;
-    navigate: NavigateFunction;
-}) => {
-    setIsSubmitting(true);
-    console.log("UserData", userData);
-
-    try {
-        const response = await publicGateway.post(
-            onboardingRoutes.createAccount,
-            userData
-        );
-        const tokens = response.data.response;
-        console.log("createAccount - response.data.response", tokens);
-        localStorage.setItem("accessToken", tokens.accessToken);
-        localStorage.setItem("refreshToken", tokens.refreshToken);
-        getInfo(() => navigate("/role"));
-    } catch (err: any) {
-        const messages = err.response.data.message.general[0];
-        console.log("Create Account Error", messages[0]);
-        Object.entries(messages).forEach(([fieldName, errorMessage]) => {
-            if (Array.isArray(errorMessage)) {
-                toast({
-                    title: errorMessage?.join(", ") || "",
-                    status: "error",
-                    isClosable: true
-                });
-            }
-        });
-    }
-    setIsSubmitting(false);
+    setIsLoading && setIsLoading(false);
 };
 
 // POST request for registration
@@ -307,11 +274,21 @@ export const registerUser = (
                 Object.entries(error.response.data.message).forEach(
                     ([fieldName, errorMessage]) => {
                         if (Array.isArray(errorMessage)) {
-                            console.log(fieldName, errorMessage);
-
                             formik.setFieldError(
                                 fieldName,
                                 errorMessage?.join(", ") || ""
+                            );
+                        } else {
+                            Object.entries(errorMessage).forEach(
+                                ([subFieldName, subErrorMessage]) => {
+                                    console.log(subFieldName, subErrorMessage);
+                                    formik.setFieldError(
+                                        subFieldName,
+                                        (subErrorMessage as string[]).join(
+                                            ", "
+                                        ) || ""
+                                    );
+                                }
                             );
                         }
                     }
@@ -399,5 +376,35 @@ export const getDWMSDetails = (
         })
         .catch((error: APIError) => {
             errorHandler(error.response.status, error.response.data.status);
+        });
+};
+
+export const getLocations = async (
+    param: string,
+    setLocationData: Dispatch<SetStateAction<any[]>>,
+    setIsApiCalled: UseStateFunc<boolean>
+) => {
+    setIsApiCalled(true);
+    await publicGateway
+        .get(
+            onboardingRoutes.location.replace(
+                "${param}",
+                param === "" ? "india" : param
+            )
+        )
+        .then(response => {
+            if (response.data.response.length === 0) {
+                setIsApiCalled(false);
+                setLocationData([{ id: "", location: "" }]);
+                console.log("success");
+            } else {
+                setIsApiCalled(false);
+                console.log(response.data.response);
+                setLocationData(response.data.response);
+            }
+        })
+        .catch((error: APIError) => {
+            setIsApiCalled(false);
+            console.log(error);
         });
 };

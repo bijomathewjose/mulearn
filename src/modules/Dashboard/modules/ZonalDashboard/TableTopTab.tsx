@@ -1,4 +1,7 @@
-import { MuButton } from "@/MuLearnComponents/MuButtons/MuButton";
+import {
+    MuButton,
+    PowerfulButton
+} from "@/MuLearnComponents/MuButtons/MuButton";
 import { useNavigate } from "react-router-dom";
 
 interface TableTopTabProps {
@@ -14,18 +17,19 @@ const TableTopTab = ({ active, onTabClick, tabletopTab }: TableTopTabProps) => {
         <div className="table_tab_container">
             <div className="table_tabs">
                 {tabletopTab?.map((item: string): any => (
-                    <MuButton
-                        key={item}
-                        text={item}
+                    <PowerfulButton
                         className={
                             active === item
                                 ? "table_tab_btn active"
                                 : "table_tab_btn inactive"
                         }
+                        variant="plain"
                         onClick={() => {
                             onTabClick(item);
                         }}
-                    />
+                    >
+                        {item}
+                    </PowerfulButton>
                 ))}
             </div>
         </div>

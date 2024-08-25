@@ -4,6 +4,8 @@ import styles from "./Auth.module.css";
 import { userAuth } from "../services/auth";
 import { HiOutlineArrowRight, HiCheck } from "react-icons/hi";
 import { AiOutlineLoading } from "react-icons/ai";
+import toast from "react-hot-toast";
+
 /**
  * Page for KKEM auth when dwms_id is present in the URL
  */
@@ -31,11 +33,16 @@ export default function KKEMAuth({ param }: { param: string }) {
                 if (res.statusCode === 400) {
                     setError(res.message?.general?.toString());
                     setSuccess(false);
-                    console.log(res.message)
+
+                    toast.error(res.message?.general?.toString());
                 }
                 if (res.statusCode === 200) {
                     setError(null);
                     setSuccess(true);
+
+                    toast.success(
+                        "Success! please check your email for further instructions."
+                    );
                 }
                 setDisabled(false);
             });
@@ -60,8 +67,9 @@ export default function KKEMAuth({ param }: { param: string }) {
 
                 <button
                     type="submit"
-                    className={`${styles.submit} ${success ? styles.successBtn : ""
-                        }`}
+                    className={`${styles.submit} ${
+                        success ? styles.successBtn : ""
+                    }`}
                     disabled={disabled}
                 >
                     {disabled ? (

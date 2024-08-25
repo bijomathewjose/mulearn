@@ -1,6 +1,7 @@
 import { AxiosError } from "axios";
 import { privateGateway } from "@/MuLearnServices/apiGateways";
 import { dashboardRoutes } from "@/MuLearnServices/urls";
+import toast from "react-hot-toast";
 
 //function that converts the uuid object into a map
 //with uuid as key and name/title as value
@@ -21,7 +22,7 @@ const uuidMapper = (uuid: Partial<uuidType>) => {
 };
 
 //Converts all uuids to corresponding string in taskdata
-const uuidToString = (data: any, uuid: Partial<uuidType>) => {
+export const uuidToString = (data: any, uuid: Partial<uuidType>) => {
     const Mapper = uuidMapper(uuid);
     return data.map((task: any) => {
         task.level = Mapper.level![task.level];
@@ -57,8 +58,9 @@ export const getTasks = async (
             }
         );
         const tasks: any = response?.data;
-        const uuids: Partial<uuidType> = await getUUID();
-        setData(uuidToString(tasks.response.data, uuids));
+        setData(tasks.response.data);
+        // const uuids: Partial<uuidType> = await getUUID();
+        // setData(uuidToString(tasks.response.data, uuids));
         if (setTotalPages) {
             setTotalPages(tasks.response.pagination.totalPages);
         }
@@ -78,11 +80,10 @@ export const getTaskDetails = async (
 ) => {
     try {
         const response = await privateGateway.get(
-            dashboardRoutes.getTasksData + "get/" + id + "/"
+            dashboardRoutes.getTasksData + id
         );
         const message: any = response?.data;
-        //console.log(message);
-        setData(message.response.Task);
+        setData(message.response);
     } catch (err: unknown) {
         const error = err as AxiosError;
         if (error?.response) {
@@ -95,53 +96,56 @@ export const editTask = async (
     hashtag: string,
     title: string,
     karma: string,
-    active: string,
-    variable_karma: string,
+    active: boolean,
+    variable_karma: boolean,
     usage_count: string,
     channel_id: string,
     type_id: string,
     level_id: string,
     ig_id: string,
     org_id: string,
+    description: string,
+    discord_link: string,
     id: string | undefined,
-    toast: ToastAsPara
+    event: string,
+    bonus_time?: string,
+    bonus_karma?: string
 ) => {
     try {
+        const formattedBonusTime = (bonus_time && bonus_time != "")
+            ? new Date(bonus_time).toISOString() // Convert bonus_time to ISO format
+            : null;
+
         const response = await privateGateway.put(
-            dashboardRoutes.getTasksData + "edit/" + id + "/",
+            dashboardRoutes.getTasksData + id,
             {
                 title: title,
                 hashtag: hashtag,
                 karma: parseInt(karma),
                 usage_count: parseInt(usage_count),
-                active: parseInt(active),
-                variable_karma: parseInt(variable_karma),
+                active: active,
+                variable_karma: variable_karma,
                 channel: channel_id,
                 type: type_id,
-                level: level_id,
-                ig: ig_id,
-                org: org_id
+                description: description === "" ? null : description,
+                level: level_id === "" ? null : level_id,
+                ig: ig_id === "" ? null : ig_id,
+                org: org_id === "" ? null : org_id,
+                discord_link: discord_link,
+                event: event === "" ? null : event,
+                bonus_time:
+                    formattedBonusTime === "" ? null : formattedBonusTime,
+                bonus_karma: parseInt(bonus_karma ?? "0")
             }
         );
-        const message: any = response?.data;
-        toast({
-            title: "Task Updated",
-            description: "Task has been updated successfully",
-            status: "success",
-            duration: 5000,
-            isClosable: true
-        });
-        //console.log(message);
+
+        toast.success("Task has been updated successfully");
     } catch (err: unknown) {
         const error = err as AxiosError;
         if (error?.response) {
             console.log(error.response);
-            toast({
-                title: "Task Update Failed",
-                status: "error",
-                duration: 5000,
-                isClosable: true
-            });
+
+            toast.error("Task Update Failed");
         }
     }
 };
@@ -151,40 +155,48 @@ export const createTask = async (
     title: string,
     karma: string,
     usage_count: string,
-    active: string,
-    variable_karma: string,
+    active: boolean,
+    variable_karma: boolean,
     description: string,
     channel_id: string,
     type_id: string,
     level_id: string,
     ig_id: string,
     org_id: string,
-    toast: ToastAsPara
+    discord_link: string,
+    event: string,
+    bonus_time?: string,
+    bonus_karma?: string
 ) => {
     try {
+        const formattedBonusTime = bonus_time
+            ? new Date(bonus_time).toISOString() // Convert bonus_time to ISO format
+            : null;
+
         const response = await privateGateway.post(
-            dashboardRoutes.getTasksData + "create/",
+            dashboardRoutes.getTasksData,
             {
                 title: title,
                 hashtag: hashtag,
                 karma: parseInt(karma),
                 usage_count: parseInt(usage_count),
-                active: parseInt(active),
-                variable_karma: parseInt(variable_karma),
-                description: description,
+                active: active,
+                variable_karma: variable_karma,
+                description: description === "" ? null : description,
                 channel: channel_id,
                 type: type_id,
-                level: level_id,
-                ig: ig_id,
-                org: org_id
+                level: level_id === "" ? null : level_id,
+                ig: ig_id === "" ? null : ig_id,
+                org: org_id === "" ? null : org_id,
+                discord_link: discord_link,
+                event: event === "" ? null : event,
+                bonus_time:
+                    formattedBonusTime === "" ? null : formattedBonusTime,
+                bonus_karma: parseInt(bonus_karma ?? "0")
             }
         );
-		toast({
-            title: "Task created",
-            status: "success",
-            duration: 3000,
-            isClosable: true
-        });
+
+        toast.success("Task has been created successfully");
     } catch (err: unknown) {
         const error = err as AxiosError;
         if (error?.response) {
@@ -193,22 +205,14 @@ export const createTask = async (
     }
 };
 
-export const deleteTask = async (
-    id: string | undefined,
-    toast: ToastAsPara
-) => {
+export const deleteTask = async (id: string | undefined) => {
     try {
-        const response = await privateGateway.patch(
-            dashboardRoutes.getTasksData + "delete/" + id + "/"
+        const response = await privateGateway.delete(
+            dashboardRoutes.getTasksData + id + "/"
         );
-        toast({
-            title: "Task deleted",
-            status: "success",
-            duration: 3000,
-            isClosable: true
-        });
+
+        toast.success("Task has been deleted successfully");
         const message: any = response?.data;
-        //console.log(message);
     } catch (err: unknown) {
         const error = err as AxiosError;
         if (error?.response) {
@@ -239,6 +243,31 @@ export const getUUID = async () => {
         );
     }
     return response;
+};
+
+export const getTaskTemplate = async () => {
+    try {
+        const response = await privateGateway.get(
+            dashboardRoutes.getTaskTemplate,
+            { responseType: "blob" } // Set the response type to 'blob'
+        );
+        const blob = new Blob([response.data], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }); // Set the correct MIME type for XLSX files
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "TaskTemplate.xlsx");
+
+        document.body.appendChild(link);
+        link.click();
+    } catch (err: unknown) {
+        const error = err as AxiosError;
+        if (error?.response) {
+            console.log(error.response);
+        }
+    }
 };
 
 // function to take a js object and convert it to a XLSX file using the SheetJS library

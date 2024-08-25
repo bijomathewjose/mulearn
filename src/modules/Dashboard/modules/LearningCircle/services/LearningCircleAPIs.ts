@@ -1,65 +1,21 @@
 import { AxiosError } from "axios";
 import { privateGateway } from "@/MuLearnServices/apiGateways";
 import { dashboardRoutes } from "@/MuLearnServices/urls";
-import { createStandaloneToast } from "@chakra-ui/react";
 import { SetStateAction } from "react";
 import { NavigateFunction } from "react-router-dom";
-import { getUserProfile } from "../../Profile/services/api";
+import { dynamicRoute, lcRoutes } from "@/MuLearnServices/endpoints";
 
-export const { toast } = createStandaloneToast();
+import { toast } from "react-hot-toast";
 
 export const getUserLearningCircles = async (
     setCircleList: UseStateFunc<LcType[] | undefined>
 ) => {
     try {
         const response = await privateGateway.get(
-            dashboardRoutes.getCampusLearningCircles
+            dashboardRoutes.getCampusLearningCircles + "user-list/"
         );
         const message: any = response?.data;
         setCircleList(message.response);
-    } catch (err: unknown) {
-        const error = err as AxiosError;
-        if (error?.response) {
-            throw error;
-        }
-    }
-};
-
-export const getLcDetails = async (
-    setCircleList: UseStateFunc<LcDetail | undefined>,
-    id: string | undefined
-) => {
-    try {
-        const response = (await privateGateway.get(
-            dashboardRoutes.getCampusLearningCircles + id + "/"
-        )) as APIResponse<LcDetail & { day: string }>;
-
-        const message = response.data.response;
-
-        if (message.day) {
-            const dayArray = message.day
-                .split(",")
-                .map((x: string) => parseInt(x));
-            setCircleList({ ...message, day: dayArray });
-        } else {
-            setCircleList(message);
-        }
-    } catch (err: unknown) {
-        const error = err as AxiosError;
-        if (error?.response) {
-            throw error;
-        }
-    }
-};
-export const updateLcNote = async (id: string | undefined, note: string) => {
-    try {
-        const response = await privateGateway.put(
-            dashboardRoutes.getCampusLearningCircles + id + "/",
-            {
-                note: note
-            }
-        );
-        const message: any = response;
     } catch (err: unknown) {
         const error = err as AxiosError;
         if (error?.response) {
@@ -125,80 +81,24 @@ export const createCircle = async (
         );
         const message: any = response?.data;
         setId(message.response.circle_id);
-        toast({
-            title: "Learning Circle Created",
-            description: "",
-            status: "success",
-            duration: 2000,
-            isClosable: true
-        });
+        toast.success("Learning Circle Created");
         setTimeout(() => {
             navigate(
-                `/dashboard/learning-circle/details/${message.response.circle_id}`
+                `/dashboard/learning-circle/dashboard/${message.response.circle_id}`
             );
         }, 2000);
     } catch (err) {
         const error: any = err as AxiosError;
         if (error?.response) {
-            toast({
-                title: `${error.response.data.message.non_field_errors}`,
-                description: "",
-                status: "error",
-                duration: 2000,
-                isClosable: true
-            });
-            console.log(error.response.data);
+            toast.error(`${error.response.data.message.non_field_errors}`);
         } else {
-            toast({
-                title: "Something went wrong, learning Circle was not created",
-                description: "",
-                status: "error",
-                duration: 2000,
-                isClosable: true
-            });
+            toast.error(
+                "Something went wrong, learning Circle was not created"
+            );
+            setTimeout(() => {
+                navigate(`/dashboard/learning-circle/`);
+            }, 2000);
         }
-
-        setTimeout(() => {
-            navigate(`/dashboard/learning-circle/`);
-        }, 2000);
-    }
-};
-
-export const setLCMeetTime = async (
-    meetTime: string,
-    meetPlace: string,
-    day: number[],
-    id: string | undefined
-) => {
-    try {
-        const response = await privateGateway.patch(
-            dashboardRoutes.setLCMeetTime + id + "/",
-            {
-                meet_time: `${meetTime}`,
-                meet_place: meetPlace,
-                day: `${day}`
-            }
-        );
-        const message: any = response?.data;
-        toast({
-            title: "Successful",
-            description: "",
-            status: "success",
-            duration: 2000,
-            isClosable: true
-        });
-    } catch (err) {
-        const error = err as AxiosError;
-        if (error?.response) {
-            throw error;
-        }
-        toast({
-            title: "Try Again..",
-            description: "",
-            status: "error",
-            duration: 2000,
-            isClosable: true
-        });
     }
 };
 
@@ -208,23 +108,11 @@ export const joinCircle = async (circleCode: string) => {
             dashboardRoutes.joinLearningCircle + circleCode + "/"
         );
 
-        toast({
-            title: "Wait for approval",
-            description: "",
-            status: "warning",
-            duration: 2000,
-            isClosable: true
-        });
+        toast.success("Waiting for approval");
     } catch (err) {
         const error = err as AxiosError;
         if (error?.response) {
-            toast({
-                title: `${error.response.data}`,
-                description: "",
-                status: "error",
-                duration: 2000,
-                isClosable: true
-            });
+            toast.error(`${error.response.data}`);
         }
     }
 };
@@ -245,46 +133,6 @@ export const getInterestGroups = async () => {
     }
 };
 
-export const approveLcUser = async (
-    circleId: string | undefined,
-    memberId: string,
-    flag: number,
-    status: string
-) => {
-    try {
-        const response = await privateGateway.patch(
-            dashboardRoutes.getCampusLearningCircles +
-                circleId +
-                "/" +
-                memberId +
-                "/",
-            {
-                is_accepted: flag
-            }
-        );
-
-        toast({
-            title: status,
-            description: "",
-            status: "success",
-            duration: 2000,
-            isClosable: true
-        });
-    } catch (err) {
-        const error = err as AxiosError;
-        if (error?.response) {
-            throw error;
-        }
-        toast({
-            title: "Something went wrong",
-            description: "",
-            status: "error",
-            duration: 2000,
-            isClosable: true
-        });
-    }
-};
-
 export const leaveLc = async (
     circleId: string | undefined,
     memberId: string,
@@ -294,62 +142,16 @@ export const leaveLc = async (
         const response = await privateGateway.delete(
             dashboardRoutes.getCampusLearningCircles + circleId + "/"
         );
-        toast({
-            title: "Success",
-            description: "",
-            status: "success",
-            duration: 2000,
-            isClosable: true
-        });
+
+        toast.success("Learning Circle Left");
         navigate("/dashboard/learning-circle/");
     } catch (err) {
         const error = err as AxiosError;
         if (error?.response) {
             throw error;
         }
-        toast({
-            title: "Something went wrong",
-            description: "",
-            status: "error",
-            duration: 2000,
-            isClosable: true
-        });
-    }
-};
 
-export const removeMember = async (
-    circleId: string | undefined,
-    memberId: string,
-    navigate: NavigateFunction
-) => {
-    try {
-        const response = await privateGateway.post(
-            dashboardRoutes.getCampusLearningCircles +
-                circleId +
-                "/" +
-                memberId +
-                "/"
-        );
-        toast({
-            title: "Success",
-            description: "",
-            status: "success",
-            duration: 2000,
-            isClosable: true
-        });
-        navigate(`/dashboard/learning-circle/details/${circleId}`);
-    } catch (err) {
-        const error = err as AxiosError;
-        if (error?.response) {
-            throw error;
-        }
-        toast({
-            title: "Something went wrong",
-            description: "",
-            status: "error",
-            duration: 2000,
-            isClosable: true
-        });
+        toast.error("Something went wrong, learning Circle was not left");
     }
 };
 
@@ -364,12 +166,7 @@ export const searchLearningCircleWithCircleCode = (
         if (lc.length === 1) {
             getCampusLearningCircles(setLc, setIsLoading);
         }
-        toast({
-            title: "Enter circle code",
-            status: "info",
-            duration: 2000,
-            isClosable: true
-        });
+        toast.error("Enter circle code");
         return;
     }
     const regex = /[^a-zA-Z0-9]/g;
@@ -388,13 +185,184 @@ export const searchLearningCircleWithCircleCode = (
         })
         .catch(err => {
             for (let error of err.response?.data?.message?.general) {
-                toast({
-                    description: error,
-                    status: "error",
-                    duration: 2000,
-                    isClosable: true
-                });
+                toast.error(error);
             }
             setIsLoading(false); // Set isLoading to false
         });
+};
+
+//! New LC APIs ---------------------------------------------------------------------------->
+export const getLcDetails = async (
+    setCircleList: UseStateFunc<LcDetail | undefined>,
+    id: string | undefined
+) => {
+    try {
+        const response = (await privateGateway.get(
+            dynamicRoute(lcRoutes.getDetailsUpdateNote, id as string)
+        )) as APIResponse<LcDetail & { day: string }>;
+
+        const message = response.data.response;
+
+        if (message.day) {
+            const dayArray = message.day
+                .split(",")
+                .map((x: string) => parseInt(x));
+            setCircleList({ ...message, day: dayArray });
+        } else {
+            setCircleList(message);
+        }
+    } catch (err: unknown) {
+        const error = err as AxiosError;
+        if (error?.response) {
+            throw error;
+        }
+    }
+};
+
+export const updateLcNote = async (data: LcNote) => {
+    try {
+        const response = await privateGateway.put(
+            dynamicRoute(lcRoutes.getDetailsUpdateNote, data.id as string),
+            data
+        );
+        const message: any = response;
+        return message;
+    } catch (err: unknown) {
+        const error = err as AxiosError;
+        if (error?.response) {
+            throw error;
+        }
+    }
+};
+
+export const setLCMeetTime = async (
+    data: LcMeetSchedule,
+    id: string | undefined
+) => {
+    try {
+        const response = await privateGateway.put(
+            dynamicRoute(lcRoutes.scheduleMeet, id as string),
+            data
+        );
+        const message: any = response?.data;
+        return message;
+    } catch (err) {
+        const error = err as AxiosError;
+        if (error?.response) {
+            throw error;
+        }
+    }
+};
+
+export const reportMeeting = async (id: string | undefined, data: FormData) => {
+    try {
+        const response = await privateGateway.post(
+            dynamicRoute(lcRoutes.createReport, id as string),
+            data,
+            {
+                maxBodyLength: Infinity,
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            }
+        );
+        const message: any = response?.data;
+        return message;
+    } catch (err) {
+        const error = err as AxiosError;
+        if (error?.response) {
+            throw error;
+        }
+    }
+};
+
+export const getLCMeetingReport = async (
+    reportId: string | undefined,
+    circleId: string | undefined
+) => {
+    try {
+        const response = await privateGateway.get(
+            dynamicRoute(
+                lcRoutes.getReport,
+                circleId as string,
+                reportId as string
+            )
+        );
+        const message: any = response?.data;
+        return message.response;
+    } catch (err) {
+        const error = err as AxiosError;
+        if (error?.response) {
+            throw error;
+        }
+    }
+};
+
+export const transferLead = async (
+    circleId: string | undefined,
+    memberId: string,
+    navigate?: any
+) => {
+    try {
+        const response = await privateGateway.patch(
+            dynamicRoute(lcRoutes.transferLead, circleId as string, memberId)
+        );
+        const message = response.data;
+        return message;
+    } catch (err) {
+        const error = err as AxiosError;
+        if (error?.response) {
+            throw error;
+        }
+    }
+};
+
+export const approveLcUser = async (
+    circleId: string | undefined,
+    memberId: string,
+    flag: number,
+    message?: string
+) => {
+    try {
+        const response = await privateGateway.patch(
+            dynamicRoute(
+                lcRoutes.approveRejectRemoveUser,
+                circleId as string,
+                memberId
+            ),
+            {
+                is_accepted: flag
+            }
+        );
+        const message = response.data;
+        return message;
+    } catch (err) {
+        const error = err as AxiosError;
+        if (error?.response) {
+            throw error;
+        }
+    }
+};
+
+export const removeMember = async (
+    circleId: string | undefined,
+    memberId: string,
+    navigate?: any
+) => {
+    try {
+        const response = await privateGateway.post(
+            dynamicRoute(
+                lcRoutes.approveRejectRemoveUser,
+                circleId as string,
+                memberId
+            )
+        );
+        const message = response.data;
+        return message;
+    } catch (err) {
+        const error = err as AxiosError;
+        if (error?.response) {
+            throw error;
+        }
+    }
 };

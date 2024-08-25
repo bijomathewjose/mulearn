@@ -16,7 +16,7 @@ import {
 } from "../services/api";
 import styles from "./Profile.module.css";
 import MuLoader from "@/MuLearnComponents/MuLoader/MuLoader";
-import { useToast } from "@chakra-ui/react";
+
 import { useNavigate, useParams } from "react-router-dom";
 import KarmaHistory from "../components/KarmaHistory/KarmaHistory";
 import MuVoyage from "../components/MuVoyage/pages/MuVoyage";
@@ -26,19 +26,19 @@ import BasicDetails from "../components/BasicDetails/pages/BasicDetails";
 import Socials from "../components/Socials/pages/Socials";
 import ShareProfilePopUp from "../components/ShareProfilePopUp/pages/ShareProfilePopUp";
 import HelmetMetaTags from "../components/HelmetMetaTags/HelmetMetaTags";
+import { isDev } from "@/MuLearnServices/common_functions";
 
 //TODO: Verify the relevance of profile page image
 const Profile = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const toast = useToast();
+
     const [APILoadStatus, setAPILoadStatus] = useState(0);
     const [profileList, setProfileList] = useState("basic-details");
     const [popUP, setPopUP] = useState(false);
     const [editPopUp, setEditPopUp] = useState(false);
     const [userProfile, setUserProfile] = useState({
-        first_name: "",
-        last_name: "",
+        full_name: "",
         college_code: "",
         interest_groups: [{ name: "", karma: 0 }],
         karma_distribution: [{ task_type: "", karma: 0 }],
@@ -51,6 +51,7 @@ const Profile = () => {
         level: "",
         profile_pic: "",
         is_public: false,
+        percentile: "",
         roles: []
     });
     const [profileStatus, setProfileStatus] = useState<boolean>();
@@ -65,7 +66,15 @@ const Profile = () => {
         {
             karma: 0,
             name: "",
-            tasks: [{ task_name: "", completed: false, hashtag: "", karma: 0 }]
+            tasks: [
+                {
+                    task_name: "",
+                    discord_link: "",
+                    completed: false,
+                    hashtag: "",
+                    karma: 0
+                }
+            ]
         }
     ]);
     const convertedData1 = userProfile.interest_groups?.map(item => [
@@ -95,6 +104,7 @@ const Profile = () => {
             getUserProfile(setUserProfile, setAPILoadStatus, setProfileStatus);
         }, 1000);
     };
+
     useEffect(() => {
         if (firstFetch.current) {
             if (!id) {
@@ -112,7 +122,10 @@ const Profile = () => {
             }
         }
         firstFetch.current = false;
-    }, []);
+        setProfileStatus(userProfile.is_public);
+    }, [id, userProfile.is_public]);
+    // console.log(userLevelData);
+
     return (
         <>
             <HelmetMetaTags userProfile={userProfile} dpm={dpm} />
@@ -143,6 +156,7 @@ const Profile = () => {
                             <EditProfilePopUp
                                 editPopUp={editPopUp}
                                 setEditPopUP={setEditPopUp}
+                                id={userProfile.id}
                                 triggerUpdateProfile={triggerUpdateProfile}
                             />
 
@@ -153,7 +167,6 @@ const Profile = () => {
                                 setProfileStatus={setProfileStatus}
                                 userProfile={userProfile}
                                 putIsPublic={putIsPublic}
-                                toast={toast}
                             />
 
                             <div className={styles.profileDash}>
@@ -187,33 +200,39 @@ const Profile = () => {
                                                     <img
                                                         src={
                                                             userProfile.profile_pic
-                                                                ? userProfile.profile_pic
+                                                                ? userProfile.profile_pic +
+                                                                  `?${
+                                                                      Math.random() *
+                                                                      1000
+                                                                  }`
                                                                 : dpm
                                                         }
                                                         alt={
-                                                            userProfile.first_name
+                                                            userProfile.full_name
                                                         }
                                                         style={
                                                             !id
                                                                 ? {
-                                                                    outlineColor:
-                                                                        !profileStatus
-                                                                            ? "#456FF6"
-                                                                            : "#2dce89"
-                                                                }
+                                                                      outlineColor:
+                                                                          !profileStatus
+                                                                              ? "#456FF6"
+                                                                              : "#2dce89"
+                                                                  }
                                                                 : {}
                                                         }
                                                     />
                                                     {!id && (
                                                         <span>
                                                             <i
-                                                                className={`${!profileStatus
+                                                                className={`${
+                                                                    !profileStatus
                                                                         ? "fi fi-sr-shield-exclamation"
                                                                         : "fi fi-sr-shield-check"
-                                                                    }  ${!profileStatus
+                                                                }  ${
+                                                                    !profileStatus
                                                                         ? styles.private
                                                                         : styles.public
-                                                                    }`}
+                                                                }`}
                                                             ></i>
                                                             <div
                                                                 className={
@@ -229,12 +248,11 @@ const Profile = () => {
                                                 </div>
                                                 <div className={styles.name}>
                                                     <h1>
-                                                        {userProfile.first_name}{" "}
-                                                        {userProfile.last_name}{" "}
+                                                        {userProfile.full_name}
                                                         {userProfile.college_code
-                                                            ? "(" +
-                                                            userProfile.college_code +
-                                                            ")"
+                                                            ? " (" +
+                                                              userProfile.college_code +
+                                                              ")"
                                                             : null}
                                                     </h1>
                                                     <p
@@ -252,9 +270,9 @@ const Profile = () => {
                                                         LEVEL{"     "}
                                                         {userProfile.level
                                                             ? userProfile?.level?.slice(
-                                                                3,
-                                                                4
-                                                            )
+                                                                  3,
+                                                                  4
+                                                              )
                                                             : 1}
                                                     </p>
                                                 </div>
@@ -304,26 +322,26 @@ const Profile = () => {
                                             <p
                                                 style={
                                                     profileList ===
-                                                        "basic-details"
+                                                    "basic-details"
                                                         ? {
-                                                            marginLeft: "0px",
-                                                            width: "6.1rem"
-                                                        }
+                                                              marginLeft: "0px",
+                                                              width: "6.1rem"
+                                                          }
                                                         : profileList ===
                                                             "karma-history"
-                                                            ? {
+                                                          ? {
                                                                 marginLeft:
                                                                     "125px",
                                                                 width: "6.7rem"
                                                             }
-                                                            : profileList ===
-                                                                "mu-voyage"
-                                                                ? {
-                                                                    marginLeft:
-                                                                        "250px",
-                                                                    width: "5.3rem"
-                                                                }
-                                                                : {}
+                                                          : profileList ===
+                                                              "mu-voyage"
+                                                            ? {
+                                                                  marginLeft:
+                                                                      "250px",
+                                                                  width: "5.3rem"
+                                                              }
+                                                            : {}
                                                 }
                                                 className={styles.underline}
                                             ></p>
@@ -335,11 +353,11 @@ const Profile = () => {
                                                 }
                                                 style={
                                                     profileList ===
-                                                        "basic-details"
+                                                    "basic-details"
                                                         ? {
-                                                            fontSize: "600",
-                                                            color: "#000"
-                                                        }
+                                                              fontSize: "600",
+                                                              color: "#000"
+                                                          }
                                                         : {}
                                                 }
                                             >
@@ -353,11 +371,11 @@ const Profile = () => {
                                                 }
                                                 style={
                                                     profileList ===
-                                                        "karma-history"
+                                                    "karma-history"
                                                         ? {
-                                                            fontSize: "600",
-                                                            color: "#000"
-                                                        }
+                                                              fontSize: "600",
+                                                              color: "#000"
+                                                          }
                                                         : {}
                                                 }
                                             >
@@ -370,9 +388,9 @@ const Profile = () => {
                                                 style={
                                                     profileList === "mu-voyage"
                                                         ? {
-                                                            fontSize: "600",
-                                                            color: "#000"
-                                                        }
+                                                              fontSize: "600",
+                                                              color: "#000"
+                                                          }
                                                         : {}
                                                 }
                                             >
@@ -390,11 +408,11 @@ const Profile = () => {
                                                             userProfile.karma
                                                         ) > 1000
                                                             ? (
-                                                                parseInt(
-                                                                    userProfile.karma
-                                                                ) / 1000
-                                                            ).toPrecision(3) +
-                                                            "K"
+                                                                  parseInt(
+                                                                      userProfile.karma
+                                                                  ) / 1000
+                                                              ).toPrecision(3) +
+                                                              "K"
                                                             : userProfile.karma}
                                                     </h1>
                                                 </div>
@@ -409,31 +427,33 @@ const Profile = () => {
                                                         ) /
                                                             monthDifference >
                                                             1000 &&
-                                                            monthDifference !== 0
+                                                        monthDifference !== 0
                                                             ? (
-                                                                parseInt(
-                                                                    userProfile.karma
-                                                                ) /
-                                                                monthDifference /
-                                                                1000
-                                                            ).toPrecision(4) +
-                                                            "K"
+                                                                  parseInt(
+                                                                      userProfile.karma
+                                                                  ) /
+                                                                  monthDifference /
+                                                                  1000
+                                                              ).toPrecision(4) +
+                                                              "K"
                                                             : isNaN(
-                                                                parseInt(
-                                                                    userProfile.karma
-                                                                ) /
-                                                                monthDifference
-                                                            )
-                                                                ? "0"
-                                                                : monthDifference ===
-                                                                    0
-                                                                    ? "0"
-                                                                    : (
-                                                                        parseInt(
-                                                                            userProfile.karma
-                                                                        ) /
+                                                                    parseInt(
+                                                                        userProfile.karma
+                                                                    ) /
                                                                         monthDifference
-                                                                    ).toPrecision(3)}
+                                                                )
+                                                              ? "0"
+                                                              : monthDifference ===
+                                                                  0
+                                                                ? "0"
+                                                                : (
+                                                                      parseInt(
+                                                                          userProfile.karma
+                                                                      ) /
+                                                                      monthDifference
+                                                                  ).toPrecision(
+                                                                      3
+                                                                  )}
                                                     </h1>
                                                 </div>
                                             </div>
@@ -442,6 +462,17 @@ const Profile = () => {
                                                 <div>
                                                     <span>Rank</span>
                                                     <h1>{userProfile.rank}</h1>
+                                                </div>
+                                            </div>
+                                            <div className={styles.points}>
+                                                <Rank />
+                                                <div>
+                                                    <span>Percentile</span>
+                                                    <h1>
+                                                        {parseFloat(
+                                                            userProfile.percentile
+                                                        ).toFixed(2)}
+                                                    </h1>
                                                 </div>
                                             </div>
                                         </div>
@@ -463,11 +494,11 @@ const Profile = () => {
                                                 userLevel={
                                                     userProfile.level !== null
                                                         ? parseInt(
-                                                            userProfile.level.slice(
-                                                                3,
-                                                                4
-                                                            )
-                                                        )
+                                                              userProfile.level?.slice(
+                                                                  3,
+                                                                  4
+                                                              )
+                                                          )
                                                         : 1
                                                 }
                                             />

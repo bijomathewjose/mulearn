@@ -1,6 +1,6 @@
 import { hasRole } from "@/MuLearnServices/common_functions";
 import { roles } from "@/MuLearnServices/types";
-import { useToast } from "@chakra-ui/react";
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -26,13 +26,10 @@ interface CollegeFormProps {
 const useFormData = (props: CollegeFormProps) => {
     const [inputName, setInputName] = useState("");
     const [inputCode, setInputCode] = useState("");
-
-    const [affiliation, setAffiliation] = useState<any>("");
     const [country, setCountry] = useState<any>("");
     const [state, setState] = useState<any>("");
     const [district, setDistrict] = useState<any>("");
     const [zone, setZone] = useState<any>("");
-    const [affiliatedUniversity, setAffiliatedUniversity] = useState("");
 
     const [affiliationData, setAffiliationData] = useState<any[]>([]);
     const [countryData, setCountryData] = useState<any[]>([]);
@@ -51,7 +48,6 @@ const useFormData = (props: CollegeFormProps) => {
     const [isSuccess, setIsSuccess] = useState(false);
 
     const navigate = useNavigate();
-    const toast = useToast();
 
     function camelCase(str: string) {
         return str?.replace(
@@ -78,7 +74,6 @@ const useFormData = (props: CollegeFormProps) => {
             zone: string;
             district: string;
             orgType: string;
-            toast: any;
         }
 
         const SelectBody = (item: string) => {
@@ -89,8 +84,7 @@ const useFormData = (props: CollegeFormProps) => {
                 state: state.value,
                 zone: zone.value,
                 district: district.value,
-                orgType,
-                toast
+                orgType
             };
         };
 
@@ -180,7 +174,6 @@ const useFormData = (props: CollegeFormProps) => {
 
     const handleAffiliationChange = (option: any) => {
         if (option) {
-            setAffiliation(option);
             setSelectedAffiliation(option.value as string);
         }
     };

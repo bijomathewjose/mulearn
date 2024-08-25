@@ -1,9 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { authRoutes } from "./urls";
-import { createStandaloneToast } from "@chakra-ui/react";
+import toast, { toast as Toast, Toaster } from "react-hot-toast";
 import { fetchLocalStorage } from "./common_functions";
-
-const { toast } = createStandaloneToast();
 
 export const publicGateway = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL as string,
@@ -44,6 +42,23 @@ privateGateway.interceptors.request.use(
     }
 );
 
+// Request Interceptor: Ensure that the URL ends with a trailing slash
+// If the URL doesn't terminate with a slash, this interceptor appends one.
+privateGateway.interceptors.request.use(
+    function (config) {
+        if (config.url) {
+            if (!config.url.endsWith("/")) {
+                config.url += "/";
+            }
+        }
+        return config;
+    },
+    function (error) {
+        // Do something with request error
+        return Promise.reject(error);
+    }
+);
+
 // Add a response interceptor
 privateGateway.interceptors.response.use(
     function (response) {
@@ -70,9 +85,8 @@ privateGateway.interceptors.response.use(
                 //console.log('new access token',response.data.response.accessToken)
                 // Retry the original request
                 const { config } = error;
-                config.headers[
-                    "Authorization"
-                ] = `Bearer ${localStorage.getItem("accessToken")}`;
+                config.headers["Authorization"] =
+                    `Bearer ${localStorage.getItem("accessToken")}`;
                 return await new Promise((resolve, reject) => {
                     privateGateway
                         .request(config)
@@ -85,15 +99,7 @@ privateGateway.interceptors.response.use(
                         });
                 });
             } catch (error_2) {
-                //console.log('error_2',error_2);
-                toast.closeAll();
-                toast({
-                    title: "Your session has expired.",
-                    description: "Please login again.",
-                    status: "error",
-                    duration: 5000,
-                    isClosable: true
-                });
+                toast.error("Your session has expired. Please login again.");
 
                 // Wait for 3 seconds
                 setTimeout(() => {
@@ -103,6 +109,14 @@ privateGateway.interceptors.response.use(
                 return await Promise.reject(error_2);
             }
         }
+        //! This was causeing unwanted redirects during api testing please fix.
+        //! Spend 2 hours to figure out this was causing the issue.
+        // if (error.response?.status === 500) {
+        //     // publicGatewayAuth
+        //     //console.log("inside", error.response, error.response?.data?.statusCode)
+        //     //Toast.error("A server error has occurred. Please try again later.");
+        //     window.location.href = "/500";
+        // }
 
         // Any status codes that fall outside the range of 2xx cause this function to trigger
         // Do something with response error

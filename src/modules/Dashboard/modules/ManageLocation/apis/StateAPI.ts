@@ -1,13 +1,12 @@
 import { AxiosError, AxiosRequestConfig } from "axios";
 import { privateGateway } from "@/MuLearnServices/apiGateways";
 import { ManageLocationsRoutes } from "@/MuLearnServices/urls";
-import { ToastId, UseToastOptions } from "@chakra-ui/toast";
+import toast from "react-hot-toast";
 
 //*WORKING✅
 export const getStateData = async (
     setData?: UseStateFunc<any>,
     country?: string,
-    toast?: (options?: UseToastOptions | undefined) => ToastId,
     perPage?: number,
     page?: number,
     setTotalPages?: UseStateFunc<number>,
@@ -38,14 +37,7 @@ export const getStateData = async (
     } catch (err: any) {
         if (err?.response) {
             const errorMsg = err.response?.data?.message?.general[0] ?? "";
-            if (!toast) return console.log(errorMsg);
-            toast({
-                title: `Error`,
-                description: errorMsg,
-                status: "error",
-                duration: 3000,
-                isClosable: true
-            });
+            toast.error(errorMsg);
         }
     }
 };
@@ -58,7 +50,7 @@ export const postStateData = async (country: string, stateName: string) => {
                 ManageLocationsRoutes.patchStateData.replace("${state}/", ""),
                 {
                     country: country,
-                    name: stateName
+                    label: stateName
                 }
             )
             .then(({ data }) => data.response)
@@ -81,17 +73,11 @@ export const patchStateData = async (
 ) => {
     try {
         await privateGateway
-            .patch(
-                ManageLocationsRoutes.patchStateData.replace(
-                    "${state}",
-                    stateID
-                ),
-                {
-                    country: country,
-                    id: stateID,
-                    name: newName
-                }
-            )
+            .patch(ManageLocationsRoutes.patchStateData + `${stateID}/`, {
+                // country: country,
+                id: stateID,
+                label: newName
+            })
             .then(({ data }) => data.response)
             .then(({ data }) => {
                 console.log(data);
@@ -108,12 +94,7 @@ export const patchStateData = async (
 export const deleteStateData = async (stateID: string) => {
     try {
         await privateGateway
-            .delete(
-                ManageLocationsRoutes.patchStateData.replace(
-                    "${state}",
-                    stateID
-                )
-            )
+            .delete(ManageLocationsRoutes.patchStateData + `${stateID}`)
             .then(({ data }) => console.log(data.message.general[0]));
     } catch (err: unknown) {
         const error = err as AxiosError;

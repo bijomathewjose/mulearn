@@ -2,16 +2,17 @@ import React, { useEffect, useState, useRef } from "react";
 import styles from "./Socials.module.css";
 import { useParams } from "react-router-dom";
 import { useFormik } from "formik";
+import { getSocials, updateSocials } from "../services/api";
 import LinkedIn from "../../../assets/svg/LinkedIn";
 import Twitter from "../../../assets/svg/Twitter";
 import Instagram from "../../../assets/svg/Instagram";
 import Behance from "../../../assets/svg/Behance";
-import { getSocials, updateSocials } from "../services/api";
 import Github from "../../../assets/svg/Github";
 import Facebook from "../../../assets/svg/Facebook";
 import Dribble from "../../../assets/svg/Dribble";
 import StackOverflow from "../../../assets/svg/StackOverflow";
 import Medium from "../../../assets/svg/Medium";
+import HackerRank from "../../../assets/svg/HackerRank";
 
 type Props = {};
 
@@ -28,7 +29,8 @@ const Socials = (props: Props) => {
         dribble: "https://dribbble.com/",
         behance: "https://www.behance.net/",
         stackoverflow: "https://stackoverflow.com/users/",
-        medium: "https://medium.com/@"
+        medium: "https://medium.com/@",
+        hackerrank: "https://www.hackerrank.com/profile/"
     };
     const socialMediaSvgComponents: { [key: string]: JSX.Element | null } = {
         github: <Github />,
@@ -39,7 +41,8 @@ const Socials = (props: Props) => {
         facebook: <Facebook />,
         dribble: <Dribble />,
         stackoverflow: <StackOverflow />,
-        medium: <Medium />
+        medium: <Medium />,
+        hackerrank: <HackerRank />
     };
     const formik = useFormik({
         initialValues: {
@@ -50,19 +53,10 @@ const Socials = (props: Props) => {
             dribble: "",
             behance: "",
             stackoverflow: "",
-            medium: ""
+            medium: "",
+            hackerrank: ""
         },
         onSubmit: values => {
-            // const updateValue = Object.entries(values).reduce<{
-            //     [key: string]: string;
-            // }>((acc, [key, value]) => {
-            //     if (value) {
-            //         acc[key] = value;
-            //     }
-            //     return acc;
-            // }, {});
-
-            // console.log(updateValue);
             updateSocials(values, setSocials, formikRef);
         },
         validate: (values: { [key: string]: string }) => {
@@ -79,9 +73,15 @@ const Socials = (props: Props) => {
     const formikRef = useRef(formik);
 
     useEffect(() => {
-        getSocials(setSocials, formikRef);
+        if (id) {
+            getSocials(setSocials, formikRef, id);
+        } else {
+            getSocials(setSocials, formikRef);
+        }
+
         // console.log(formik.values);
     }, []);
+
     return (
         <>
             <div className={styles.edit_social_btn}>
@@ -98,14 +98,12 @@ const Socials = (props: Props) => {
                 {editSocials && !id && (
                     <p
                         onClick={() => {
-                            {
-                                Object.keys(formik.errors).length === 0 && (
-                                    <>
-                                        {setEditSocials(false)}
-                                        {formik.handleSubmit()}
-                                    </>
-                                );
-                            }
+                            Object.keys(formik.errors).length === 0 && (
+                                <>
+                                    {setEditSocials(false)}
+                                    {formik.handleSubmit()}
+                                </>
+                            );
                         }}
                         className={styles.edit_profile_btn}
                         tabIndex={0}
@@ -114,11 +112,19 @@ const Socials = (props: Props) => {
                     </p>
                 )}
             </div>
+            {Object.values(formik.values).filter(
+                value => value === "" || value === null
+            ).length >= 9 &&
+                !editSocials && (
+                    <p className={styles.display_message}>
+                        You have not connected any socials medias to your
+                        profile yet.
+                    </p>
+                )}
             <p className={styles.socials_icons}>
-                {Object.values(formik.values).filter(value => value !== "")
-                    .length != 0 ||
-                Object.values(formik.values).filter(value => value === null)
-                    .length != 0
+                {Object.values(formik.values).filter(
+                    value => value === "" || value === null
+                ).length <= 9
                     ? Object.entries(formik.values).map(
                           ([name, username], i) => {
                               if (editSocials ? true : username) {
@@ -193,9 +199,7 @@ const Socials = (props: Props) => {
                               return ""; // if username is empty
                           }
                       )
-                    : id
-                    ? " No socials added"
-                    : " To enhance your profile, Share your online presence with world!"}
+                    : "No socials connected yet"}
             </p>
         </>
     );

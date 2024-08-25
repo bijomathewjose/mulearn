@@ -19,13 +19,11 @@ export default function MulearnAbout() {
     // let mu_id = null;
 
     useEffect(() => {
-        if(!encrypted_key) return;
+        if (!encrypted_key) return;
         publicGateway
             .get(KKEMRoutes.userStatus + `${encrypted_key}/`)
             .then(res => {
-                // console.log(res.data.response.mu_id);
-                setMuId(res.data.response.mu_id);
-                console.log(mu_id);
+                setMuId(res.data.response.muid);
             })
             .catch(err => {
                 console.log(err);

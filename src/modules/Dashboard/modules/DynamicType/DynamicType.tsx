@@ -3,12 +3,13 @@ import Pagination from "@/MuLearnComponents/Pagination/Pagination";
 import Table from "@/MuLearnComponents/Table/Table";
 import THead from "@/MuLearnComponents/Table/THead";
 import TableTop from "@/MuLearnComponents/TableTop/TableTop";
-import { MuButton } from "@/MuLearnComponents/MuButtons/MuButton";
+import {
+    MuButton,
+    PowerfulButton
+} from "@/MuLearnComponents/MuButtons/MuButton";
 import { AiOutlinePlusCircle, AiOutlineUser } from "react-icons/ai";
 import styles from "./DynamicType.module.css";
 import modalStyles from "./components/Modal.module.css";
-import { dashboardRoutes } from "@/MuLearnServices/urls";
-import { useToast } from "@chakra-ui/react";
 import Modal from "./components/Modal";
 import CreateModal from "./components/CreateModal";
 import TableTopTab from "../ZonalDashboard/TableTopTab";
@@ -21,6 +22,9 @@ import {
     getTypes
 } from "./apis";
 import EditModal from "./components/EditModal";
+import { Blank } from "@/MuLearnComponents/Table/Blank";
+import toast from "react-hot-toast";
+import { dashboardRoutes } from "@/MuLearnServices/urls";
 
 function DynamicType() {
     const [data, setData] = useState<any[]>([]);
@@ -31,7 +35,6 @@ function DynamicType() {
     const [search, setSearch] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const firstFetch = useRef(true);
-    const toast = useToast();
     const [tab, setTab] = useState<"Role" | "User">("Role");
     const [currRow, setCurrRow] = useState<string>("");
     //Modal
@@ -59,7 +62,7 @@ function DynamicType() {
                         stroke="#039855"
                         stroke-width="2"
                         strokeLinecap="round"
-                        stroke-linejoin="round"
+                        strokeLinejoin="round"
                     />
                 </svg>
             </div>
@@ -87,28 +90,18 @@ function DynamicType() {
         { column: "role", Label: "Role", isSortable: false }
     ];
     const columnOrderUser = [
+        { column: "name", Label: "Name", isSortable: false },
         { column: "type", Label: "Type", isSortable: false },
         { column: "email", Label: "Email", isSortable: false },
         { column: "muid", Label: "MUID", isSortable: false }
     ];
 
     const errHandler = (err: any) => {
-        toast({
-            title: "Something went wrong",
-            description: err.toString(),
-            status: "error",
-            duration: 3000,
-            isClosable: true
-        });
+        toast.error("Something went wrong");
     };
 
     const succHandler = (msg: any, add?: Function) => {
-        toast({
-            title: msg,
-            status: "success",
-            duration: 3000,
-            isClosable: true
-        });
+        toast.success(msg);
         if (add) add();
     };
 
@@ -231,46 +224,47 @@ function DynamicType() {
             />
             {currModal
                 ? (() => {
-                      if (currModal === "create")
-                          return (
-                              <Modal
-                                  onClose={setCurrModal}
-                                  icon={icons.tick}
-                                  header="Create Role"
-                                  paragraph="Enter the values for the new role"
-                              >
-                                  <CreateModal
-                                      roles={tab === "Role" ? roles : undefined}
-                                      type={types}
-                                      onClose={setCurrModal}
-                                  />
-                              </Modal>
-                          );
-                      if (currModal === "edit")
-                          return (
-                              <Modal
-                                  onClose={setCurrModal}
-                                  icon={icons.tick}
-                                  header="Create Role"
-                                  paragraph="Enter the values for the new role"
-                              >
-                                  <EditModal
-                                      roles={tab === "Role" ? roles : undefined}
-                                      rowId={currRow}
-                                      onClose={setCurrModal}
-                                  />
-                              </Modal>
-                          );
-                  })()
+                    if (currModal === "create")
+                        return (
+                            <Modal
+                                onClose={setCurrModal}
+                                icon={icons.tick}
+                                header="Create Role"
+                                paragraph="Enter the values for the new role"
+                            >
+                                <CreateModal
+                                    roles={tab === "Role" ? roles : undefined}
+                                    type={types}
+                                    onClose={setCurrModal}
+                                />
+                            </Modal>
+                        );
+                    if (currModal === "edit")
+                        return (
+                            <Modal
+                                onClose={setCurrModal}
+                                icon={icons.tick}
+                                header="Create Role"
+                                paragraph="Enter the values for the new role"
+                            >
+                                <EditModal
+                                    roles={tab === "Role" ? roles : undefined}
+                                    rowId={currRow}
+                                    onClose={setCurrModal}
+                                />
+                            </Modal>
+                        );
+                })()
                 : ""}
 
             <div className={styles.createBtnContainer}>
-                <MuButton
+                <PowerfulButton
                     className={styles.createBtn}
-                    text={"Create"}
-                    icon={<AiOutlinePlusCircle></AiOutlinePlusCircle>}
                     onClick={handleCreate}
-                />
+                >
+                    <AiOutlinePlusCircle />
+                    Create
+                </PowerfulButton>
             </div>
 
             {data && (
@@ -318,7 +312,7 @@ function DynamicType() {
                                 />
                             )}
                         </div>
-                        {/*use <Blank/> when u don't need <THead /> or <Pagination inside <Table/> cause <Table /> needs atleast 2 children*/}
+                        <Blank />
                     </Table>
                 </>
             )}

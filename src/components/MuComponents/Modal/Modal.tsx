@@ -9,8 +9,9 @@ interface ModalProps {
     heading: string | undefined;
     value?: string | number | boolean;
     content: string | undefined;
-    click: any;
+    click?: any;
     type?: string;
+    buttonText?: string;
 }
 
 const Modal: FC<ModalProps> = ({
@@ -20,6 +21,7 @@ const Modal: FC<ModalProps> = ({
     content,
     click,
     type,
+    buttonText,
     value
 }) => {
     return (
@@ -36,7 +38,7 @@ const Modal: FC<ModalProps> = ({
                             <RiCloseLine style={{ marginBottom: "-3px" }} />
                         </PowerfulButton>
 
-                        {type == "error" ? (
+                        {type == "error" || type == "Leave" ? (
                             <div className={styles.checkbtndelete}>
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -65,7 +67,7 @@ const Modal: FC<ModalProps> = ({
                                         stroke="#039855"
                                         stroke-width="2"
                                         stroke-linecap="round"
-                                        stroke-linejoin="round"
+                                        strokeLinejoin="round"
                                     />
                                 </svg>
                             </div>
@@ -107,11 +109,17 @@ const Modal: FC<ModalProps> = ({
                             title="help"
                             style={{ padding: "0px 100px", width: "100px" }}
                             onClick={() => {
-                                click(id);
-                                setIsOpen(false);
+                                (async () => {
+                                    await click(id);
+                                    setIsOpen(false);
+                                })();
                             }}
                         >
-                            {type == "error" ? "Delete" : "Confirm"}
+                            {type == "error"
+                                ? "Delete"
+                                : type == "Leave"
+                                  ? "Leave"
+                                  : "Confirm"}
                         </PowerfulButton>
                     </div>
                 </div>

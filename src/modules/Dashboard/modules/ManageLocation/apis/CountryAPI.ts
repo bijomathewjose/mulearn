@@ -1,12 +1,11 @@
 import { AxiosError, AxiosRequestConfig } from "axios";
 import { privateGateway } from "@/MuLearnServices/apiGateways";
 import { ManageLocationsRoutes } from "@/MuLearnServices/urls";
-import { ToastId, UseToastOptions } from "@chakra-ui/toast";
+import toast from "react-hot-toast";
 
 //* WORKING✅
 export const getCountryData = async (
     setData?: UseStateFunc<any>,
-    toast?: (options?: UseToastOptions | undefined) => ToastId,
     perPage?: number,
     page?: number,
     setTotalPages?: UseStateFunc<number>,
@@ -25,35 +24,28 @@ export const getCountryData = async (
             })
         ).data.response;
 
-        if (setTotalPages) setTotalPages(data.pagination.totalPages);
-        if (setData) setData(data.data);
-        else {
+        if (setTotalPages) {
+            setTotalPages(data.pagination.totalPages);
+        }
+        if (setData) {
+            setData(data.data);
+        } else {
             return data.data;
         }
     } catch (err: any) {
         if (err?.response) {
             const errorMsg = err.response?.data?.message?.general[0] ?? "";
-            if (!toast) return console.log(errorMsg);
-            toast({
-                title: `Error`,
-                description: errorMsg,
-                status: "error",
-                duration: 3000,
-                isClosable: true
-            });
+            toast.error(errorMsg);
         }
     }
 };
 
 //*WORKING ✅
-export const postCountryData = async (
-    countryName: string,
-    toast: (options?: UseToastOptions | undefined) => ToastId
-) => {
+export const postCountryData = async (countryName: string) => {
     try {
         await privateGateway
             .post(ManageLocationsRoutes.getCountryData, {
-                name: countryName
+                label: countryName
             })
             .then(({ data }) => data.response)
             .then(({ data }) => {
@@ -62,36 +54,21 @@ export const postCountryData = async (
     } catch (err: any) {
         if (err?.response) {
             const errorMsg = err.response.data.message.general[0];
-            toast({
-                title: `Error`,
-                description: errorMsg,
-                status: "error",
-                duration: 3000,
-                isClosable: true
-            });
+
+            toast.error(errorMsg);
         }
     }
 };
 
 //*WORKING ✅
-export const patchCountryData = async (
-    countryID: string,
-    newName: string,
-    toast?: (options?: UseToastOptions | undefined) => ToastId
-) => {
+export const patchCountryData = async (countryID: string, newName: string) => {
     try {
         console.log(countryID);
         await privateGateway
-            .patch(
-                ManageLocationsRoutes.patchCountryData.replace(
-                    "${country}",
-                    countryID
-                ),
-                {
-                    id: countryID,
-                    name: newName
-                }
-            )
+            .patch(ManageLocationsRoutes.patchCountryData + `${countryID}/`, {
+                id: countryID,
+                label: newName
+            })
             .then(({ data }) => data.response)
             .then(({ data }) => {
                 console.log(data);
@@ -105,14 +82,11 @@ export const patchCountryData = async (
 };
 
 //*WORKING ✅
-export const deleteCountryData = async (
-    id: string,
-    toast?: (options?: UseToastOptions | undefined) => ToastId
-) => {
+export const deleteCountryData = async (id: string) => {
     try {
         await privateGateway
             .delete(
-                ManageLocationsRoutes.patchCountryData.replace("${country}", id)
+                ManageLocationsRoutes.patchCountryData + `${id}/`
                 // {
                 //     name: countryName
                 // }

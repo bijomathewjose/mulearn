@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./UrlShortener.module.css";
 import {
     getShortenUrls,
@@ -11,12 +11,13 @@ import Table from "@/MuLearnComponents/Table/Table";
 import THead from "@/MuLearnComponents/Table/THead";
 import Pagination from "@/MuLearnComponents/Pagination/Pagination";
 import { useFormik } from "formik";
-import { background, useToast } from "@chakra-ui/react";
 import {
     MuButton,
-    MuButtonLight,
     PowerfulButton
 } from "@/MuLearnComponents/MuButtons/MuButton";
+import { Blank } from "@/MuLearnComponents/Table/Blank";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 type urlData = {
     id: string | number | boolean;
     long_url: string;
@@ -31,13 +32,14 @@ const UrlShortener = () => {
         { column: "created_at", Label: "Created Date", isSortable: true }
     ];
 
-    const toast = useToast();
+    const navigate = useNavigate();
     const [editBtn, setEditBtn] = useState(false);
     const [createBtn, setCreateBtn] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [loading, setLoading] = useState(false);
     const [perPage, setPerPage] = useState(20);
-    const [sort, setSort] = useState("created_at");
+    const [sort, setSort] = useState("-created_at");
     const [shortUrlData, setShortUrlData] = useState<urlData[]>([]);
 
     const formik = useFormik({
@@ -55,7 +57,7 @@ const UrlShortener = () => {
                 short_url: values.short_url
             };
             if (!editBtn) {
-                createShortenUrl(toast, urlCreateData, formik).then(result => {
+                createShortenUrl(urlCreateData, formik).then(result => {
                     if (result) {
                         setShortUrlData(prevShortUrlData => [
                             ...prevShortUrlData.filter(
@@ -76,14 +78,13 @@ const UrlShortener = () => {
                                 perPage,
                                 setTotalPages
                             );
-                            // formik.handleReset(formik.values);
                         }, 500);
                         setEditBtn(false);
                         setCreateBtn(false);
                     }
                 });
             } else {
-                editShortenUrl(values.id, toast, urlCreateData, formik).then(
+                editShortenUrl(values.id, urlCreateData, formik).then(
                     result => {
                         if (result) {
                             setShortUrlData(prevShortUrlData => [
@@ -160,7 +161,8 @@ const UrlShortener = () => {
                 perPage,
                 setTotalPages,
                 "",
-                `-${column}`
+                `-${column}`,
+                setLoading
             );
         } else {
             setSort(column);
@@ -170,7 +172,8 @@ const UrlShortener = () => {
                 perPage,
                 setTotalPages,
                 "",
-                column
+                column,
+                setLoading
             );
         }
     };
@@ -193,9 +196,14 @@ const UrlShortener = () => {
         );
         setEditBtn(true);
     };
+    const analytics = (id: any) => {
+        console.log(id);
+        // redirect to analytics paga
+        navigate(`/dashboard/url-shortener/analytics/${id}`);
+    };
 
     const handleDelete = (id: any) => {
-        deleteShortenUrl(id.toString(), toast);
+        deleteShortenUrl(id.toString());
         setShortUrlData(shortUrlData.filter(item => item?.id !== id));
     };
     const handleCopy = (id: any) => {
@@ -203,30 +211,34 @@ const UrlShortener = () => {
             shortUrlData.filter(item => item?.id === id)[0].short_url
         );
         console.log(shortUrlData.filter(item => item?.id === id)[0].short_url);
-        toast({
-            title: "Copied",
-            status: "success",
-            duration: 2000,
-            isClosable: true
-        });
+
+        toast.success("Copied");
     };
 
     useEffect(() => {
-        getShortenUrls(setShortUrlData, 1, perPage, setTotalPages);
+        getShortenUrls(
+            setShortUrlData,
+            1,
+            perPage,
+            setTotalPages,
+            "",
+            sort,
+            setLoading
+        );
         getShortenUrls(
             setShortUrlData,
             currentPage,
             perPage,
             setTotalPages,
             "",
-            `${sort}`
+            `${sort}`,
+            setLoading
         );
     }, []);
 
     return (
         <>
-            <MuButton
-                text="Create"
+            <PowerfulButton
                 onClick={() => setCreateBtn(true)}
                 style={{
                     width: "fit-content",
@@ -236,7 +248,9 @@ const UrlShortener = () => {
                     margin: "auto",
                     marginRight: "3%"
                 }}
-            />
+            >
+                Create
+            </PowerfulButton>
             {(editBtn || createBtn) && (
                 <div className={styles.url_shortener_container}>
                     <div className={styles.create_new_url}>
@@ -344,10 +358,11 @@ const UrlShortener = () => {
                     onEditClick={handleEdit}
                     onDeleteClick={handleDelete}
                     onCopyClick={handleCopy}
+                    analytics={analytics}
+                    isloading={loading}
                 >
                     <THead
                         columnOrder={columnOrder}
-                        // editableColumnNames={editableColumnNames}
                         onIconClick={handleIconClick}
                     />
                     <Pagination
@@ -360,7 +375,7 @@ const UrlShortener = () => {
                         perPage={perPage}
                         setPerPage={setPerPage}
                     />
-                    {/*use <Blank/> when u don't need <THead /> or <Pagination inside <Table/> cause <Table /> needs atleast 2 children*/}
+                    <Blank />
                 </Table>
             </>
         </>

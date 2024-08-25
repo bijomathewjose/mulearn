@@ -1,25 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap");
 
-
-.wrapper form{
-    width: 25rem;
+.wrapper form {
+    width: 100%;
+    min-width: 300px;
 }
-.text{
+.text {
     font-weight: 700;
 }
-.select label span{
+.select label span {
     font-weight: lighter;
 }
 
-.wrapper{
-    padding: 2rem;
+.wrapper {
+    padding: 1rem;
     display: flex;
     justify-content: center;
     align-items: center;
 }
-.inputBox{
+.inputBox {
     width: 100%;
-    height: 2.5rem;
+    /* height: 2.5rem; */
     margin-top: 1rem;
 
     span {
@@ -28,54 +28,57 @@
         margin-left: 15px;
     }
 }
-.inputBox input{
+.inputBox input {
     width: 100%;
     height: 100%;
-    background: #F3F3F4;
+    background: #f3f3f4;
     border-radius: 8px;
     border: none;
     padding: 1rem;
 }
-.submit{
+.submit {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 3rem;
 }
-.submit button{
+.submit button {
     width: 100%;
     height: 2.5rem;
     border-radius: 8px;
-    background: #456FF6;
+    background: #456ff6;
     color: white;
     border: none;
 }
-.content{
+.content {
     width: 100%;
     margin-top: 2rem;
-
 }
-.select{
+.select {
     display: flex;
     align-items: center;
-    flex-direction: column;
-    margin-top: 2rem;
-    gap: 1rem;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+    justify-content: center;
 }
-.selectRadio{
-    width: 12rem;
+
+.selectRadio {
+    width: 100%;
     height: 2.8rem;
     background: transparent;
     border: none;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-    font-size: larger;
+    font-size: normal;
 }
-.selectRadio label{
-    margin-left: -5rem;
-    
+.selectRadio label {
+    margin-left: -7rem;
+}
+.selectRadio label span {
+    margin-left: 1rem;
+    font-weight: 500;
 }
 
-
-
-
+.errorsSpan {
+    color: red;
+    font-size: small;
+}

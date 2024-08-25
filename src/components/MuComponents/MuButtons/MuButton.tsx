@@ -1,8 +1,7 @@
 import React, { ReactNode, useState } from "react";
-import styles from "./MuButtons.module.css";
+import styles from "./MuButton.module.css";
 import { ClipLoader } from "react-spinners";
 import { Spinner } from "@chakra-ui/react";
-import { LuCheck } from "react-icons/lu";
 
 /**
  * TODO: Make Single and Powerful Button Component(Multi-Purpose)
@@ -184,7 +183,7 @@ type Props = {
 };
 
 type Variants =
-      "primary"
+    | "primary"
     | "secondary"
     | "ghost"
     | "outline"
@@ -220,7 +219,7 @@ export const PowerfulButton: ButtonProps = ({
     loaderClass = "",
     ...props
 }) => {
-    const variantName = styles[`${variant}-btn`]
+    const variantName = styles[`${variant}-btn`];
 
     return (
         <button

@@ -1,13 +1,13 @@
-import { useToast } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import styles from "./Modal.module.css";
-import mustyles from "@/MuLearnComponents/MuButtons/MuButtons.module.css";
-import { MuButton } from "@/MuLearnComponents/MuButtons/MuButton";
+import mustyles from "@/MuLearnComponents/MuButtons/MuButton.module.css";
+import { PowerfulButton } from "@/MuLearnComponents/MuButtons/MuButton";
 import * as Yup from "yup";
 import FormikReactSelect, {
     FormikTextInput
 } from "@/MuLearnComponents/FormikComponents/FormikComponents";
 import { createRoleType, createUserType } from "../apis";
+import toast from "react-hot-toast";
 
 type Props = {
     onClose: any;
@@ -17,24 +17,12 @@ type Props = {
 };
 
 const CreateModal = (props: Props) => {
-    const toast = useToast();
     const errHandler = (err: any) => {
-        toast({
-            title: "Something went wrong",
-            description: err.toString(),
-            status: "error",
-            duration: 3000,
-            isClosable: true
-        });
+        toast.error("Something Went Wrong");
+        toast.error(err);
     };
     const succHandler = (msg: any) => {
-        toast({
-            title: "Something went wrong",
-            description: msg.toString(),
-            status: "success",
-            duration: 3000,
-            isClosable: true
-        });
+        toast.success(msg.toString());
     };
     return (
         <Formik
@@ -42,8 +30,6 @@ const CreateModal = (props: Props) => {
                 type: "",
                 ...(props.roles && { role: "" }),
                 ...(!props.roles && { user: "" })
-                // acceptedTerms: false, // added for our checkbox
-                // jobType: "" // added for our select
             }}
             validationSchema={Yup.object({
                 type: Yup.string().required("Required"),
@@ -98,19 +84,20 @@ const CreateModal = (props: Props) => {
                 )}
 
                 <div className={styles.ButtonContainer}>
-                    <MuButton
+                    <PowerfulButton
                         className={`${mustyles.btn} ${styles.Decline}`}
-                        text={"Decline"}
                         onClick={() => {
                             props.onClose(null);
                         }}
-                    />
-                    <MuButton
+                    >
+                        Decline
+                    </PowerfulButton>
+                    <PowerfulButton
                         className={`${mustyles.btn} ${styles.Confirm}`}
-                        text={"Confirm"}
-                        submit={true}
                         type="submit"
-                    />
+                    >
+                        Confirm
+                    </PowerfulButton>
                 </div>
             </Form>
         </Formik>

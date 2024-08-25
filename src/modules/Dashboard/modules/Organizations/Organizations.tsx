@@ -1,24 +1,24 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import Table from "@/MuLearnComponents/Table/Table";
 import THead from "@/MuLearnComponents/Table/THead";
 import TableTop from "@/MuLearnComponents/TableTop/TableTop";
 import Pagination from "@/MuLearnComponents/Pagination/Pagination";
-import { deleteOrganization, getOrganizations } from "./apis";
-import { useToast } from "@chakra-ui/react";
+import { deleteOrganization, getOrganizations } from "./OrganizationApis";
 import {
     columnsCollege,
     columnsCommunities,
-    columnsCompanies
+    columnsCompanies,
+    columnsSchool
 } from "./THeaders";
 import TableTopTab from "./TableTopTab";
-// import "./Organizations.scss"
 import { organizationRoutes } from "@/MuLearnServices/urls";
+import MuModal from "@/MuLearnComponents/MuModal/MuModal";
+import OrgForm from "./OrgForm";
+import toast from "react-hot-toast";
 
 function Organizations() {
-    const ccc = ["College", "Company", "Community"] as const;
+    const ccc = ["College", "Company", "Community", "School"] as const;
     type CCC = (typeof ccc)[number];
-
     const [data, setData] = useState<any[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
@@ -26,18 +26,14 @@ function Organizations() {
     const [columns, setColumns] = useState(columnsCollege);
     const [activeTab, setActiveTab] = useState<CCC>("College");
     const [sort, setSort] = useState("");
-    const [popupStatus, setPopupStatus] = useState(false);
-    const [activeTabName, setActiveTabName] = useState("College");
     const [isLoading, setIsLoading] = useState(false);
-    const [isCreate, setIsCreate] = useState(false);
-    const [isEdit, setIsEdit] = useState(false);
-    const firstFetch = useRef(true);
-    const navigate = useNavigate();
+    // const firstFetch = useRef(true);
 
-    const toast = useToast();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const orgFormRef = useRef<any>(null); //! Use for modal and form button connectivity
 
     useEffect(() => {
-        if (firstFetch.current || true) {
+        if (isModalOpen === false) {
             getOrganizations(
                 activeTab,
                 setData,
@@ -49,15 +45,15 @@ function Organizations() {
                 ""
             );
         }
-        firstFetch.current = false;
+        // firstFetch.current = false;
 
-        const storedActiveTab = localStorage.getItem("activeTab");
+        // const storedActiveTab = localStorage.getItem("activeTab");
 
-        if (storedActiveTab) {
-            setActiveTab(storedActiveTab as CCC);
-            handleTabClick(storedActiveTab as CCC);
-        }
-    }, [currentPage]);
+        // if (storedActiveTab) {
+        //     setActiveTab(storedActiveTab as CCC);
+        //     handleTabClick(storedActiveTab as CCC);
+        // }
+    }, [currentPage, isModalOpen]);
 
     const handleNextClick = () => {
         const nextPage = currentPage + 1;
@@ -122,19 +118,19 @@ function Organizations() {
         if (ccc.some(c => c === tab)) {
             switch (tab) {
                 case "College":
-                    setActiveTabName("college");
                     setColumns(columnsCollege);
                     break;
                 case "Company":
-                    setActiveTabName("Company");
                     setColumns(columnsCompanies);
                     break;
                 case "Community":
-                    setActiveTabName("Community");
                     setColumns(columnsCommunities);
                     break;
+                case "School":
+                    setColumns(columnsSchool);
+                    break;
             }
-            localStorage.setItem("activeTab", tab);
+            // localStorage.setItem("activeTab", tab);
 
             getOrganizations(
                 tab,
@@ -151,7 +147,6 @@ function Organizations() {
         }
         setCurrentPage(1);
         setActiveTab(tab);
-        setPopupStatus(false);
     };
 
     const handleIconClick = (column: string) => {
@@ -182,19 +177,21 @@ function Organizations() {
         }
     };
     console.log(data);
+
+    const [itemId, setItemId] = useState("");
     const handleEdit = (id: string | number | boolean) => {
-        setIsEdit(true);
-        console.log(id);
-        navigate("/dashboard/organizations/edit", {
-            state: {
-                activeItem: activeTab,
-                rowId: id
-            }
-        });
+        setItemId(String(id));
+        setIsModalOpen(true);
     };
 
     const handleDelete = (id: string | undefined) => {
-        deleteOrganization(id, toast);
+        toast.promise(deleteOrganization(id as string), {
+            loading: "Deleting...",
+            success: () => {
+                return <b>Organization deleted.</b>;
+            },
+            error: <b>Failed to delete organization</b>
+        });
         setTimeout(() => {
             handleTabClick(activeTab);
         }, 1000);
@@ -205,13 +202,28 @@ function Organizations() {
                 active={activeTab}
                 onTabClick={handleTabClick as (tab: string) => void}
             />
-
+            <MuModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={`Edit ${activeTab}`}
+                type={"success"}
+                body={`Enter the deatils of the ${activeTab} to edit.`}
+                onDone={() => orgFormRef.current?.handleSubmitExternally()}
+            >
+                <OrgForm
+                    ref={orgFormRef}
+                    type={activeTab}
+                    isEditMode={true}
+                    itemId={itemId}
+                    closeModal={() => setIsModalOpen(false)}
+                />
+            </MuModal>
             {data && (
                 <>
                     <TableTop
                         onSearchText={handleSearch}
                         onPerPageNumber={handlePerPageNumber}
-                        CSV={organizationRoutes.getOrgCsv(activeTabName)}
+                        CSV={organizationRoutes.getOrgCsv(activeTab)}
                     />
                     <Table
                         rows={data}
@@ -245,7 +257,6 @@ function Organizations() {
                                 />
                             )}
                         </div>
-                        {/*use <Blank/> when u don't need <THead /> or <Pagination inside <Table/> cause <Table /> needs atleast 2 children*/}
                     </Table>
                 </>
             )}
